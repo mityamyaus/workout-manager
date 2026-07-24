@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Role: "TRAINER" | "STUDENT"
+// ExerciseCategory: "CHEST" | "BACK" | "LEGS" | "SHOULDERS" | "ARMS" | "CORE" | "CARDIO" | "FULLBODY"
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  role         String
+  weight       Float? // текущий вес ученика, кг
+  inviteCode   String?  @unique // короткий код для входа ученика без пароля
+  email        String?  @unique // только у тренера
+  passwordHash String? // только у тренера
+  trainerId    String? // если это ученик - id тренера, который его создал
+  trainer      User?    @relation("TrainerStudents", fields: [trainerId], references: [id])
+  students     User[]   @relation("TrainerStudents")
+  createdAt    DateTime @default(now())
+
+  programsAsStudent   Program[]        @relation("StudentPrograms")
+  programsCreated     Program[]        @relation("AuthorPrograms")
+  sessionsAsStudent   TrainingSession[] @relation("StudentSessions")
+  sessionsAsTrainer   TrainingSession[] @relation("TrainerSessions")
+  progressEntries     ProgressEntry[]
+  sessionsAuth        Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Exercise {
+  id          String   @id @default(cuid())
+  name        String
+  category    String
+  description String?
+  imageUrl    String?
+  isCustom    Boolean  @default(false)
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  programExercises ProgramExercise[]
+  progressEntries  ProgressEntry[]
+}
+
+model Program {
+  id          String   @id @default(cuid())
+  name        String
+  studentId   String
+  student     User     @relation("StudentPrograms", fields: [studentId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation("AuthorPrograms", fields: [authorId], references: [id], onDelete: Cascade)
+  isIndividual Boolean @default(false)
+  createdAt   DateTime @default(now())
+
+  exercises        ProgramExercise[]
+  sessions         TrainingSession[]
+}
+
+model ProgramExercise {
+  id           String    @id @default(cuid())
+  programId    String
+  program      Program   @relation(fields: [programId], references: [id], onDelete: Cascade)
+  exerciseId   String
+  exercise     Exercise  @relation(fields: [exerciseId], references: [id])
+  order        Int       @default(0)
+  restSeconds  Int       @default(90) // отдых после каждого сета этого упражнения
+  notes        String?
+
+  sets ExerciseSet[]
+}
+
+model ExerciseSet {
+  id                String          @id @default(cuid())
+  programExerciseId String
+  programExercise   ProgramExercise @relation(fields: [programExerciseId], references: [id], onDelete: Cascade)
+  order             Int             @default(0)
+  weight            Float           @default(0)
+  reps              Int             @default(10)
+}
+
+model TrainingSession {
+  id         String   @id @default(cuid())
+  date       String // YYYY-MM-DD
+  startTime  String // HH:mm
+  endTime    String // HH:mm
+  title      String?
+  studentId  String
+  student    User     @relation("StudentSessions", fields: [studentId], references: [id], onDelete: Cascade)
+  trainerId  String
+  trainer    User     @relation("TrainerSessions", fields: [trainerId], references: [id], onDelete: Cascade)
+  programId  String?
+  program    Program? @relation(fields: [programId], references: [id])
+  notes      String?
+  createdBy  String   @default("TRAINER") // "TRAINER" | "STUDENT" - кто создал эту запись
+  createdAt  DateTime @default(now())
+
+  changeRequest SessionChangeRequest?
+}
+
+model SessionChangeRequest {
+  id                 String    @id @default(cuid())
+  sessionId          String    @unique
+  session            TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  requestedDate      String
+  requestedStartTime String
+  requestedEndTime   String
+  status             String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  createdAt          DateTime  @default(now())
+  resolvedAt         DateTime?
+}
+
+model ProgressEntry {
+  id         String   @id @default(cuid())
+  studentId  String
+  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  exerciseId String
+  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+  date       String // YYYY-MM-DD
+  weight     Float
+  reps       Int
+  sets       Int      @default(1)
+  createdAt  DateTime @default(now())
+}
