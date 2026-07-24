@@ -10,7 +10,7 @@ import {
   EquipmentType,
   ExerciseCategoryType,
 } from "@/lib/constants";
-import { CATEGORY_ICON } from "@/lib/category-icons";
+import { getCategoryIcon } from "@/lib/category-icons";
 import { fetchJson } from "@/lib/fetchJson";
 import type { ExerciseDTO, ProgramDTO } from "@/lib/types";
 
@@ -212,7 +212,7 @@ export default function ProgramBuilder({
           <div className="space-y-3">
             <p className="text-sm font-medium text-gray-500">Выбранные упражнения</p>
             {draft.map((d) => {
-              const Icon = CATEGORY_ICON[d.category];
+              const Icon = getCategoryIcon(d.category);
               return (
               <div key={d.exerciseId} className="bg-gray-50 rounded-2xl p-3 space-y-2">
                 <div className="flex items-center gap-2">
@@ -333,7 +333,7 @@ export default function ProgramBuilder({
           <div className="max-h-56 overflow-y-auto space-y-1 pt-1">
             {filtered.map((ex) => {
               const added = draft.some((d) => d.exerciseId === ex.id);
-              const Icon = CATEGORY_ICON[ex.category];
+              const Icon = getCategoryIcon(ex.category);
               return (
                 <button
                   key={ex.id}

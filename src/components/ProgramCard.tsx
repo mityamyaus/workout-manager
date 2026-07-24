@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { ClipboardList, ChevronDown, ChevronUp, Pencil, Trash2 } from "lucide-react";
-import { CATEGORY_COLORS } from "@/lib/constants";
-import { CATEGORY_ICON } from "@/lib/category-icons";
+import { getCategoryColor } from "@/lib/constants";
+import { getCategoryIcon } from "@/lib/category-icons";
 import type { ProgramDTO } from "@/lib/types";
 
 export default function ProgramCard({
@@ -41,8 +41,8 @@ export default function ProgramCard({
       {open && (
         <div className="border-t border-gray-50 divide-y divide-gray-50">
           {program.exercises.map((pe) => {
-            const Icon = CATEGORY_ICON[pe.exercise.category];
-            const color = CATEGORY_COLORS[pe.exercise.category];
+            const Icon = getCategoryIcon(pe.exercise.category);
+            const color = getCategoryColor(pe.exercise.category);
             return (
               <div key={pe.id} className="flex items-start gap-3 px-5 py-3 text-sm">
                 <span

@@ -69,6 +69,16 @@ export const CATEGORY_COLORS: Record<ExerciseCategoryType, string> = {
   CALVES: "#0d9488",
 };
 
+// Резервные геттеры: старые/неизвестные значения category (например, оставшиеся
+// в базе от прежней таксономии CHEST/BACK/LEGS/...) не должны приводить к падению UI.
+export function getCategoryLabel(category: string): string {
+  return CATEGORY_LABELS[category as ExerciseCategoryType] ?? category;
+}
+
+export function getCategoryColor(category: string): string {
+  return CATEGORY_COLORS[category as ExerciseCategoryType] ?? "#6b7280";
+}
+
 // Оборудование, используемое в упражнении
 export const EQUIPMENT_TYPES = {
   BARBELL: "BARBELL",

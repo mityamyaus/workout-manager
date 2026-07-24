@@ -19,6 +19,7 @@ import {
   CATEGORY_COLORS,
   CATEGORY_LABELS,
   EXERCISE_CATEGORIES,
+  getCategoryLabel,
   type ExerciseCategoryType,
 } from "@/lib/constants";
 import { fetchJson } from "@/lib/fetchJson";
@@ -200,7 +201,7 @@ export default function ProgressSection({ studentId }: { studentId: string }) {
           className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
         >
           {[...grouped.entries()].map(([cat, list]) => (
-            <optgroup key={cat} label={CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS]}>
+            <optgroup key={cat} label={getCategoryLabel(cat)}>
               {list.map((ex) => (
                 <option key={ex.id} value={ex.id}>
                   {ex.name}

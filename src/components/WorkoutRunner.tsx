@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { X, Check, PartyPopper, Minus, Plus } from "lucide-react";
-import type { ExerciseCategoryType } from "@/lib/constants";
-import { CATEGORY_ICON } from "@/lib/category-icons";
+import { getCategoryIcon } from "@/lib/category-icons";
 import { notify, vibrate } from "@/lib/notifications";
 import type { ProgramDTO } from "@/lib/types";
 
@@ -163,7 +162,7 @@ export default function WorkoutRunner({ program, studentId, sessionId, onClose, 
         {phase === "set" && (
           <div className="space-y-4 text-center">
             {(() => {
-              const Icon = CATEGORY_ICON[set.category as ExerciseCategoryType];
+              const Icon = getCategoryIcon(set.category);
               return (
                 <span
                   className="icon-badge w-14 h-14 mx-auto"

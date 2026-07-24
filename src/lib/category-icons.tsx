@@ -20,3 +20,10 @@ export const CATEGORY_ICON: Record<ExerciseCategoryType, LucideIcon> = {
   HAMSTRINGS: Footprints,
   CALVES: Footprints,
 };
+
+// Резервный геттер: старое/неизвестное значение category (например, оставшееся
+// в базе от прежней таксономии CHEST/BACK/LEGS/...) не должно рендерить undefined
+// как компонент (падает с "Element type is invalid").
+export function getCategoryIcon(category: string): LucideIcon {
+  return CATEGORY_ICON[category as ExerciseCategoryType] ?? Dumbbell;
+}

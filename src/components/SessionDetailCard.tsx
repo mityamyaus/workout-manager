@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { X, Check, Play, Pencil, Trash2 } from "lucide-react";
-import { CATEGORY_ICON } from "@/lib/category-icons";
+import { getCategoryIcon } from "@/lib/category-icons";
 import { fetchJson } from "@/lib/fetchJson";
 import type { ProgressEntryDTO, TrainingSessionDTO } from "@/lib/types";
 
@@ -86,7 +86,7 @@ export default function SessionDetailCard({
               <div className="space-y-3">
                 {program.exercises.map((pe) => {
                   const done = doneCounts[pe.exerciseId] ?? 0;
-                  const Icon = CATEGORY_ICON[pe.exercise.category];
+                  const Icon = getCategoryIcon(pe.exercise.category);
                   return (
                     <div key={pe.id} className="flex items-start gap-3">
                       <span className="icon-badge w-9 h-9 shrink-0 mt-0.5">
