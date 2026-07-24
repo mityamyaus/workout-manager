@@ -11,7 +11,11 @@ datasource db {
 }
 
 // Role: "TRAINER" | "STUDENT"
-// ExerciseCategory: "CHEST" | "BACK" | "LEGS" | "SHOULDERS" | "ARMS" | "CORE" | "CARDIO" | "FULLBODY"
+// ExerciseCategory (группа мышц): "TRAPS" | "FRONT_DELTS" | "SIDE_DELTS" | "REAR_DELTS" | "CHEST" |
+//   "UPPER_BACK" | "BICEPS" | "TRICEPS" | "FOREARMS" | "ABS" | "LOWER_BACK" | "GLUTES" |
+//   "HIP_ABDUCTORS" | "HIP_ADDUCTORS" | "QUADS" | "HAMSTRINGS" | "CALVES"
+// Equipment (оборудование): "BARBELL" | "DUMBBELL" | "EZ_BAR" | "SMITH_MACHINE" | "MACHINE" | "CABLE" |
+//   "KETTLEBELL" | "BODYWEIGHT" | "ASSISTED_BODYWEIGHT" | "TIME" | "CARDIO"
 
 model User {
   id           String   @id @default(cuid())
@@ -46,7 +50,8 @@ model Session {
 model Exercise {
   id          String   @id @default(cuid())
   name        String
-  category    String
+  category    String // группа мышц, см. EXERCISE_CATEGORIES в src/lib/constants.ts
+  equipment   String? // оборудование, см. EQUIPMENT_TYPES в src/lib/constants.ts
   description String?
   imageUrl    String?
   isCustom    Boolean  @default(false)

@@ -1,4 +1,4 @@
-import type { ExerciseCategoryType } from "./constants";
+import type { EquipmentType, ExerciseCategoryType } from "./constants";
 
 export interface UserDTO {
   id: string;
@@ -14,6 +14,7 @@ export interface ExerciseDTO {
   id: string;
   name: string;
   category: ExerciseCategoryType;
+  equipment: EquipmentType | null;
   description: string | null;
   imageUrl: string | null;
   isCustom: boolean;

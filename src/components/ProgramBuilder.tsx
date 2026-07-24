@@ -4,7 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { X, Plus, Check, Copy, Trash2 } from "lucide-react";
 import {
   CATEGORY_LABELS,
+  EQUIPMENT_LABELS,
+  EQUIPMENT_TYPES,
   EXERCISE_CATEGORIES,
+  EquipmentType,
   ExerciseCategoryType,
 } from "@/lib/constants";
 import { CATEGORY_ICON } from "@/lib/category-icons";
@@ -44,6 +47,7 @@ export default function ProgramBuilder({
   const isEditing = !!existingProgram;
   const [exercises, setExercises] = useState<ExerciseDTO[]>([]);
   const [category, setCategory] = useState<ExerciseCategoryType | "ALL">("ALL");
+  const [equipment, setEquipment] = useState<EquipmentType | "ALL">("ALL");
   const [search, setSearch] = useState("");
   const [draft, setDraft] = useState<DraftExercise[]>(
     existingProgram
@@ -69,10 +73,11 @@ export default function ProgramBuilder({
   const filtered = useMemo(() => {
     return exercises.filter((ex) => {
       if (category !== "ALL" && ex.category !== category) return false;
+      if (equipment !== "ALL" && ex.equipment !== equipment) return false;
       if (search && !ex.name.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [exercises, category, search]);
+  }, [exercises, category, equipment, search]);
 
   const addExercise = (ex: ExerciseDTO) => {
     if (draft.some((d) => d.exerciseId === ex.id)) return;
@@ -290,40 +295,40 @@ export default function ProgramBuilder({
 
         <div className="space-y-2 pt-2 border-t border-gray-100">
           <p className="text-sm font-medium text-gray-500">Библиотека упражнений</p>
+
+          <div className="flex gap-2">
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as ExerciseCategoryType | "ALL")}
+              className="flex-1 min-w-0 rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            >
+              <option value="ALL">Все группы мышц</option>
+              {Object.values(EXERCISE_CATEGORIES).map((cat) => (
+                <option key={cat} value={cat}>
+                  {CATEGORY_LABELS[cat]}
+                </option>
+              ))}
+            </select>
+            <select
+              value={equipment}
+              onChange={(e) => setEquipment(e.target.value as EquipmentType | "ALL")}
+              className="flex-1 min-w-0 rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            >
+              <option value="ALL">Всё оборудование</option>
+              {Object.values(EQUIPMENT_TYPES).map((eq) => (
+                <option key={eq} value={eq}>
+                  {EQUIPMENT_LABELS[eq]}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Поиск..."
             className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
           />
-          <div className="flex gap-1.5 flex-wrap">
-            <button
-              onClick={() => setCategory("ALL")}
-              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                category === "ALL"
-                  ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                  : "border-gray-200 text-gray-500"
-              }`}
-            >
-              Все
-            </button>
-            {Object.values(EXERCISE_CATEGORIES).map((cat) => {
-              const Icon = CATEGORY_ICON[cat];
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setCategory(cat)}
-                  className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                    category === cat
-                      ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                      : "border-gray-200 text-gray-500"
-                  }`}
-                >
-                  <Icon size={13} strokeWidth={1.75} /> {CATEGORY_LABELS[cat]}
-                </button>
-              );
-            })}
-          </div>
 
           <div className="max-h-56 overflow-y-auto space-y-1 pt-1">
             {filtered.map((ex) => {
@@ -339,7 +344,14 @@ export default function ProgramBuilder({
                   }`}
                 >
                   <Icon size={16} strokeWidth={1.75} className={added ? "" : "text-gray-400"} />
-                  <span className="flex-1">{ex.name}</span>
+                  <span className="flex-1">
+                    {ex.name}
+                    {ex.equipment && (
+                      <span className="block text-xs text-gray-400 font-normal">
+                        {EQUIPMENT_LABELS[ex.equipment]}
+                      </span>
+                    )}
+                  </span>
                   {added && <Check size={16} />}
                 </button>
               );

@@ -54,8 +54,6 @@ export default function WorkoutRunner({ program, studentId, sessionId, onClose, 
 
   const [current, setCurrent] = useState(0);
   const [phase, setPhase] = useState<"set" | "rest" | "done">(flatSets.length ? "set" : "done");
-  const [actualWeight, setActualWeight] = useState(flatSets[0]?.targetWeight ?? 0);
-  const [actualReps, setActualReps] = useState(flatSets[0]?.targetReps ?? 0);
   const [restDuration, setRestDuration] = useState(flatSets[0]?.restSeconds ?? 90);
   const [remaining, setRemaining] = useState(0);
   const endsAtRef = useRef<number | null>(null);
@@ -89,8 +87,8 @@ export default function WorkoutRunner({ program, studentId, sessionId, onClose, 
         exerciseId: set.exerciseId,
         sessionId: sessionId ?? null,
         date: format(new Date(), "yyyy-MM-dd"),
-        weight: actualWeight,
-        reps: actualReps,
+        weight: set.targetWeight,
+        reps: set.targetReps,
         sets: 1,
       }),
     });
@@ -105,8 +103,6 @@ export default function WorkoutRunner({ program, studentId, sessionId, onClose, 
       return;
     }
     setCurrent(next);
-    setActualWeight(flatSets[next].targetWeight);
-    setActualReps(flatSets[next].targetReps);
     setRestDuration(flatSets[next].restSeconds);
     setPhase("set");
   };
@@ -178,30 +174,21 @@ export default function WorkoutRunner({ program, studentId, sessionId, onClose, 
               );
             })()}
             <p className="text-lg font-semibold">{set.exerciseName}</p>
-            <p className="text-sm text-gray-400">
-              План: {set.targetWeight ? `${set.targetWeight} кг × ` : ""}
-              {set.targetReps} повт.
-            </p>
+            <p className="text-sm text-gray-400">Задание от тренера — вес и повторения фиксированы</p>
 
             <div className="flex gap-3 justify-center">
-              <label className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500">
                 Вес, кг
-                <input
-                  type="number"
-                  value={actualWeight}
-                  onChange={(e) => setActualWeight(Number(e.target.value))}
-                  className="w-20 mt-1 rounded-xl border border-gray-200 px-2 py-2 text-center block"
-                />
-              </label>
-              <label className="text-xs text-gray-500">
+                <p className="w-20 mt-1 rounded-xl border border-gray-200 px-2 py-2 text-center text-lg font-semibold text-gray-900">
+                  {set.targetWeight || "б/в"}
+                </p>
+              </div>
+              <div className="text-xs text-gray-500">
                 Повторения
-                <input
-                  type="number"
-                  value={actualReps}
-                  onChange={(e) => setActualReps(Number(e.target.value))}
-                  className="w-20 mt-1 rounded-xl border border-gray-200 px-2 py-2 text-center block"
-                />
-              </label>
+                <p className="w-20 mt-1 rounded-xl border border-gray-200 px-2 py-2 text-center text-lg font-semibold text-gray-900">
+                  {set.targetReps}
+                </p>
+              </div>
             </div>
 
             <button onClick={handleFinishSet} className="btn-primary w-full text-lg">

@@ -15,6 +15,7 @@ import {
   Dumbbell,
   CalendarDays,
   Clock3,
+  Copy,
 } from "lucide-react";
 import HeroHeader from "@/components/HeroHeader";
 import BottomNav from "@/components/BottomNav";
@@ -27,6 +28,7 @@ import PendingRequests from "@/components/PendingRequests";
 import InviteCodeBadge from "@/components/InviteCodeBadge";
 import SessionDetailCard from "@/components/SessionDetailCard";
 import QuickAddSheet from "@/components/QuickAddSheet";
+import CopyDayModal from "@/components/CopyDayModal";
 import { useTrainerGuard } from "@/lib/useTrainerGuard";
 import { fetchJson } from "@/lib/fetchJson";
 import type { ProgramDTO, SessionChangeRequestDTO, TrainingSessionDTO, UserDTO } from "@/lib/types";
@@ -61,6 +63,7 @@ export default function StudentDetailPage({
   const [requests, setRequests] = useState<PendingRequestWithSession[]>([]);
   const [viewingSession, setViewingSession] = useState<TrainingSessionDTO | null>(null);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [copyingDay, setCopyingDay] = useState(false);
 
   useEffect(() => {
     if (!loading && role !== "TRAINER") router.replace("/");
@@ -148,6 +151,17 @@ export default function StudentDetailPage({
       await deleteSession(editingSession.id);
       setEditingSession(null);
     }
+  };
+
+  const handleCopyDay = async (targetDate: string) => {
+    if (!selectedDate) return;
+    await fetch("/api/sessions/copy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentId, sourceDate: selectedDate, targetDate }),
+    });
+    setCopyingDay(false);
+    loadSessions();
   };
 
   const handleSaveProfile = async () => {
@@ -250,6 +264,14 @@ export default function StudentDetailPage({
               >
                 <Plus size={16} /> Тренировка на {selectedDate}
               </button>
+              {daySessions.length > 0 && (
+                <button
+                  onClick={() => setCopyingDay(true)}
+                  className="w-full flex items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-gray-300 py-3.5 text-gray-500 font-medium hover:bg-gray-100 hover:border-gray-400 transition-colors"
+                >
+                  <Copy size={16} /> Скопировать этот день
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -395,6 +417,14 @@ export default function StudentDetailPage({
             setQuickAddOpen(false);
             setShowProgramBuilder(true);
           }}
+        />
+      )}
+
+      {copyingDay && selectedDate && (
+        <CopyDayModal
+          sourceDate={selectedDate}
+          onCancel={() => setCopyingDay(false)}
+          onCopy={handleCopyDay}
         />
       )}
     </div>

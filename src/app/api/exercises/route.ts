@@ -4,11 +4,13 @@ import { prisma } from "@/lib/prisma";
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const category = searchParams.get("category");
+  const equipment = searchParams.get("equipment");
   const search = searchParams.get("search");
 
   const exercises = await prisma.exercise.findMany({
     where: {
       ...(category ? { category } : {}),
+      ...(equipment ? { equipment } : {}),
       ...(search
         ? { name: { contains: search } }
         : {}),
@@ -20,9 +22,10 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { name, category, description } = body as {
+  const { name, category, equipment, description } = body as {
     name?: string;
     category?: string;
+    equipment?: string;
     description?: string;
   };
 
@@ -34,6 +37,7 @@ export async function POST(req: Request) {
     data: {
       name: name.trim(),
       category,
+      equipment: equipment || null,
       description: description?.trim() || null,
       isCustom: true,
     },

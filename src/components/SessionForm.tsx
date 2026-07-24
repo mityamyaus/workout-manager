@@ -60,23 +60,23 @@ export default function SessionForm({
           </button>
         </div>
 
-        <div className="flex gap-3">
-          <label className="flex-1 text-sm text-gray-500">
+        <div className="grid grid-cols-2 gap-3">
+          <label className="min-w-0 text-sm text-gray-500">
             Начало
             <input
               type="time"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="w-full mt-1 rounded-xl border border-gray-300 px-3 py-2"
+              className="w-full min-w-0 mt-1 rounded-xl border border-gray-300 px-2 py-2 box-border"
             />
           </label>
-          <label className="flex-1 text-sm text-gray-500">
+          <label className="min-w-0 text-sm text-gray-500">
             Конец
             <input
               type="time"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              className="w-full mt-1 rounded-xl border border-gray-300 px-3 py-2"
+              className="w-full min-w-0 mt-1 rounded-xl border border-gray-300 px-2 py-2 box-border"
             />
           </label>
         </div>

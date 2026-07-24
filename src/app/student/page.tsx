@@ -17,6 +17,7 @@ import {
   Pencil,
   Check,
   Dumbbell,
+  LogOut,
 } from "lucide-react";
 import HeroHeader from "@/components/HeroHeader";
 import BottomNav from "@/components/BottomNav";
@@ -32,13 +33,14 @@ import QuickAddSheet from "@/components/QuickAddSheet";
 import NotificationPrompt from "@/components/NotificationPrompt";
 import SessionReminder from "@/components/SessionReminder";
 import RequestStatusNotifier from "@/components/RequestStatusNotifier";
+import AssignedSessionNotifier from "@/components/AssignedSessionNotifier";
 import { fetchJson } from "@/lib/fetchJson";
 import type { ProgramDTO, TrainingSessionDTO, UserDTO } from "@/lib/types";
 
 type Tab = "calendar" | "programs" | "progress" | "profile";
 
 export default function StudentHome() {
-  const { role, studentId, trainerId, loading } = useCurrentUser();
+  const { role, studentId, trainerId, loading, reset } = useCurrentUser();
   const router = useRouter();
 
   const [student, setStudent] = useState<UserDTO | null>(null);
@@ -154,6 +156,7 @@ export default function StudentHome() {
     <div className="space-y-4 pb-4">
       <SessionReminder studentId={studentId} />
       <RequestStatusNotifier studentId={studentId} />
+      <AssignedSessionNotifier studentId={studentId} />
       <HeroHeader
         title={`Привет, ${student.name}!`}
         subtitle="Готов к тренировке?"
@@ -323,6 +326,15 @@ export default function StudentHome() {
               )}
             </label>
           </div>
+          <button
+            onClick={() => {
+              reset();
+              router.push("/");
+            }}
+            className="btn-secondary w-full text-sm py-2.5"
+          >
+            <LogOut size={14} /> Выйти
+          </button>
         </div>
       )}
 
