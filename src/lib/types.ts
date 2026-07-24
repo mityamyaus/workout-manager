@@ -79,6 +79,7 @@ export interface ProgressEntryDTO {
   studentId: string;
   exerciseId: string;
   exercise: ExerciseDTO;
+  sessionId: string | null;
   date: string;
   weight: number;
   reps: number;

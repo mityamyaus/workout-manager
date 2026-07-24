@@ -11,6 +11,7 @@ import type { ProgramDTO } from "@/lib/types";
 interface WorkoutRunnerProps {
   program: ProgramDTO;
   studentId: string;
+  sessionId?: string | null;
   onClose: () => void;
   onLogged?: () => void;
 }
@@ -29,7 +30,7 @@ type FlatSet = {
   isLastOverall: boolean;
 };
 
-export default function WorkoutRunner({ program, studentId, onClose, onLogged }: WorkoutRunnerProps) {
+export default function WorkoutRunner({ program, studentId, sessionId, onClose, onLogged }: WorkoutRunnerProps) {
   const flatSets = useMemo<FlatSet[]>(() => {
     const flat: FlatSet[] = [];
     program.exercises.forEach((pe, exerciseIndex) => {
@@ -86,6 +87,7 @@ export default function WorkoutRunner({ program, studentId, onClose, onLogged }:
       body: JSON.stringify({
         studentId,
         exerciseId: set.exerciseId,
+        sessionId: sessionId ?? null,
         date: format(new Date(), "yyyy-MM-dd"),
         weight: actualWeight,
         reps: actualReps,

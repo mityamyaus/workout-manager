@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { X, Trash2, Check, RefreshCw } from "lucide-react";
+import { X, Trash2, Check } from "lucide-react";
 import type { ProgramDTO, TrainingSessionDTO } from "@/lib/types";
 
 interface SessionFormProps {
   date: string;
   programs: ProgramDTO[];
   initial?: TrainingSessionDTO | null;
-  requiresApproval?: boolean;
   onCancel: () => void;
   onSave: (data: {
     date: string;
@@ -25,7 +24,6 @@ export default function SessionForm({
   date,
   programs,
   initial,
-  requiresApproval,
   onCancel,
   onSave,
   onDelete,
@@ -36,8 +34,6 @@ export default function SessionForm({
   const [programId, setProgramId] = useState<string>(initial?.programId ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [busy, setBusy] = useState(false);
-
-  const pendingRequest = initial?.changeRequest?.status === "PENDING" ? initial.changeRequest : null;
 
   const handleSave = async () => {
     setBusy(true);
@@ -63,19 +59,6 @@ export default function SessionForm({
             <X size={22} />
           </button>
         </div>
-
-        {requiresApproval && (
-          <p className="text-xs text-amber-600 bg-amber-50 rounded-xl px-3 py-2">
-            Эту тренировку назначил тренер. Вы можете предложить другое время — тренер получит уведомление и должен будет подтвердить перенос.
-          </p>
-        )}
-
-        {pendingRequest && (
-          <p className="text-xs text-blue-600 bg-blue-50 rounded-xl px-3 py-2">
-            Уже отправлена заявка на перенос: {pendingRequest.requestedDate} {pendingRequest.requestedStartTime}–
-            {pendingRequest.requestedEndTime} (ожидает решения тренера)
-          </p>
-        )}
 
         <div className="flex gap-3">
           <label className="flex-1 text-sm text-gray-500">
@@ -104,8 +87,7 @@ export default function SessionForm({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Например: Верх тела"
-            disabled={requiresApproval}
-            className="w-full mt-1 rounded-xl border border-gray-300 px-3 py-2 disabled:bg-gray-50 disabled:text-gray-400"
+            className="w-full mt-1 rounded-xl border border-gray-300 px-3 py-2"
           />
         </label>
 
@@ -114,8 +96,7 @@ export default function SessionForm({
           <select
             value={programId}
             onChange={(e) => setProgramId(e.target.value)}
-            disabled={requiresApproval}
-            className="w-full mt-1 rounded-xl border border-gray-300 px-3 py-2 disabled:bg-gray-50 disabled:text-gray-400"
+            className="w-full mt-1 rounded-xl border border-gray-300 px-3 py-2"
           >
             <option value="">Без программы</option>
             {programs.map((p) => (
@@ -132,8 +113,7 @@ export default function SessionForm({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
-            disabled={requiresApproval}
-            className="w-full mt-1 rounded-xl border border-gray-300 px-3 py-2 disabled:bg-gray-50 disabled:text-gray-400"
+            className="w-full mt-1 rounded-xl border border-gray-300 px-3 py-2"
           />
         </label>
 
@@ -144,15 +124,7 @@ export default function SessionForm({
             </button>
           )}
           <button disabled={busy} onClick={handleSave} className="btn-primary flex-1 text-sm">
-            {requiresApproval ? (
-              <>
-                <RefreshCw size={14} /> Предложить перенос
-              </>
-            ) : (
-              <>
-                <Check size={14} /> Сохранить
-              </>
-            )}
+            <Check size={14} /> Сохранить
           </button>
         </div>
       </div>

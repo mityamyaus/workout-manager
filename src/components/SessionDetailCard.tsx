@@ -28,16 +28,17 @@ export default function SessionDetailCard({
   const [doneCounts, setDoneCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    fetchJson<ProgressEntryDTO[]>(`/api/progress?studentId=${studentId}`).then((entries) => {
-      if (!entries) return;
-      const counts: Record<string, number> = {};
-      for (const e of entries) {
-        if (e.date !== session.date) continue;
-        counts[e.exerciseId] = (counts[e.exerciseId] ?? 0) + 1;
+    fetchJson<ProgressEntryDTO[]>(`/api/progress?studentId=${studentId}&sessionId=${session.id}`).then(
+      (entries) => {
+        if (!entries) return;
+        const counts: Record<string, number> = {};
+        for (const e of entries) {
+          counts[e.exerciseId] = (counts[e.exerciseId] ?? 0) + 1;
+        }
+        setDoneCounts(counts);
       }
-      setDoneCounts(counts);
-    });
-  }, [studentId, session.date]);
+    );
+  }, [studentId, session.id]);
 
   const program = session.program;
   const totalSets = program ? program.exercises.reduce((sum, pe) => sum + pe.sets.length, 0) : 0;

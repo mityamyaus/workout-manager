@@ -52,6 +52,7 @@ export default function StudentHome() {
   const [editingWeight, setEditingWeight] = useState(false);
   const [weightInput, setWeightInput] = useState("");
   const [runningProgram, setRunningProgram] = useState<ProgramDTO | null>(null);
+  const [runningSessionId, setRunningSessionId] = useState<string | null>(null);
   const [editingProgram, setEditingProgram] = useState<ProgramDTO | null>(null);
   const [viewingSession, setViewingSession] = useState<TrainingSessionDTO | null>(null);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
@@ -100,9 +101,6 @@ export default function StudentHome() {
     .filter((s) => s.date >= today)
     .sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime))[0];
 
-  const editingRequiresApproval =
-    editingSession !== "new" && editingSession !== null && editingSession.createdBy === "TRAINER";
-
   const handleSaveSession = async (data: {
     date: string;
     startTime: string;
@@ -112,19 +110,11 @@ export default function StudentHome() {
     notes: string;
   }) => {
     if (editingSession && editingSession !== "new") {
-      if (editingSession.createdBy === "TRAINER") {
-        await fetch(`/api/sessions/${editingSession.id}/request-change`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ date: data.date, startTime: data.startTime, endTime: data.endTime }),
-        });
-      } else {
-        await fetch(`/api/sessions/${editingSession.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-      }
+      await fetch(`/api/sessions/${editingSession.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
     } else {
       await fetch("/api/sessions", {
         method: "POST",
@@ -231,6 +221,7 @@ export default function StudentHome() {
                       onClick={(e) => {
                         e.stopPropagation();
                         setRunningProgram(s.program);
+                        setRunningSessionId(s.id);
                       }}
                       className="btn-primary w-full mt-4 text-sm"
                     >
@@ -266,7 +257,13 @@ export default function StudentHome() {
                     : undefined
                 }
               />
-              <button onClick={() => setRunningProgram(p)} className="btn-primary w-full text-sm">
+              <button
+                onClick={() => {
+                  setRunningProgram(p);
+                  setRunningSessionId(null);
+                }}
+                className="btn-primary w-full text-sm"
+              >
                 <Play size={16} fill="currentColor" /> Начать тренировку
               </button>
             </div>
@@ -346,12 +343,9 @@ export default function StudentHome() {
           date={editingSession === "new" ? selectedDate! : editingSession.date}
           programs={programs}
           initial={editingSession === "new" ? null : editingSession}
-          requiresApproval={editingRequiresApproval}
           onCancel={() => setEditingSession(null)}
           onSave={handleSaveSession}
-          onDelete={
-            editingSession !== "new" && !editingRequiresApproval ? handleDeleteSession : undefined
-          }
+          onDelete={editingSession !== "new" ? handleDeleteSession : undefined}
         />
       )}
 
@@ -384,7 +378,11 @@ export default function StudentHome() {
         <WorkoutRunner
           program={runningProgram}
           studentId={studentId}
-          onClose={() => setRunningProgram(null)}
+          sessionId={runningSessionId}
+          onClose={() => {
+            setRunningProgram(null);
+            setRunningSessionId(null);
+          }}
         />
       )}
 
@@ -395,17 +393,29 @@ export default function StudentHome() {
           canStart
           onStart={() => {
             const program = viewingSession.program;
+            const sessionId = viewingSession.id;
             setViewingSession(null);
-            if (program) setRunningProgram(program);
+            if (program) {
+              setRunningProgram(program);
+              setRunningSessionId(sessionId);
+            }
           }}
-          onEdit={() => {
-            setEditingSession(viewingSession);
-            setViewingSession(null);
-          }}
-          onDelete={async () => {
-            await deleteSession(viewingSession.id);
-            setViewingSession(null);
-          }}
+          onEdit={
+            viewingSession.createdBy === "STUDENT"
+              ? () => {
+                  setEditingSession(viewingSession);
+                  setViewingSession(null);
+                }
+              : undefined
+          }
+          onDelete={
+            viewingSession.createdBy === "STUDENT"
+              ? async () => {
+                  await deleteSession(viewingSession.id);
+                  setViewingSession(null);
+                }
+              : undefined
+          }
           onClose={() => setViewingSession(null)}
         />
       )}

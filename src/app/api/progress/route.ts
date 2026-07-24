@@ -5,6 +5,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const studentId = searchParams.get("studentId");
   const exerciseId = searchParams.get("exerciseId");
+  const sessionId = searchParams.get("sessionId");
 
   if (!studentId) {
     return NextResponse.json({ error: "studentId обязателен" }, { status: 400 });
@@ -14,6 +15,7 @@ export async function GET(req: Request) {
     where: {
       studentId,
       ...(exerciseId ? { exerciseId } : {}),
+      ...(sessionId ? { sessionId } : {}),
     },
     include: { exercise: true },
     orderBy: { date: "asc" },
@@ -23,9 +25,10 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { studentId, exerciseId, date, weight, reps, sets } = body as {
+  const { studentId, exerciseId, sessionId, date, weight, reps, sets } = body as {
     studentId?: string;
     exerciseId?: string;
+    sessionId?: string | null;
     date?: string;
     weight?: number;
     reps?: number;
@@ -43,6 +46,7 @@ export async function POST(req: Request) {
     data: {
       studentId,
       exerciseId,
+      sessionId: sessionId || null,
       date,
       weight,
       reps,

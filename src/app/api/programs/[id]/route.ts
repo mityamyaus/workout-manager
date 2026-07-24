@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getTrainerByToken, SESSION_COOKIE } from "@/lib/auth";
 
 const exerciseInclude = {
   exercises: {
@@ -31,7 +32,7 @@ type ExerciseInput = {
 };
 
 export async function PATCH(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
@@ -43,6 +44,18 @@ export async function PATCH(
       { error: "Название и хотя бы одно упражнение с сетом обязательны" },
       { status: 400 }
     );
+  }
+
+  const existing = await prisma.program.findUnique({ where: { id }, include: { student: true } });
+  if (!existing) return NextResponse.json({ error: "Не найдено" }, { status: 404 });
+
+  // Программу, составленную тренером, может редактировать только тренер-владелец
+  // ученика. Свою индивидуальную программу ученик редактирует без авторизации.
+  if (!existing.isIndividual) {
+    const trainer = await getTrainerByToken(req.cookies.get(SESSION_COOKIE)?.value);
+    if (!trainer || existing.student.trainerId !== trainer.id) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 403 });
+    }
   }
 
   const program = await prisma.$transaction(async (tx) => {
@@ -75,10 +88,21 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+
+  const existing = await prisma.program.findUnique({ where: { id }, include: { student: true } });
+  if (!existing) return NextResponse.json({ error: "Не найдено" }, { status: 404 });
+
+  if (!existing.isIndividual) {
+    const trainer = await getTrainerByToken(req.cookies.get(SESSION_COOKIE)?.value);
+    if (!trainer || existing.student.trainerId !== trainer.id) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 403 });
+    }
+  }
+
   await prisma.program.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }

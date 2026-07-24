@@ -109,7 +109,8 @@ model TrainingSession {
   createdBy  String   @default("TRAINER") // "TRAINER" | "STUDENT" - кто создал эту запись
   createdAt  DateTime @default(now())
 
-  changeRequest SessionChangeRequest?
+  changeRequest   SessionChangeRequest?
+  progressEntries ProgressEntry[]
 }
 
 model SessionChangeRequest {
@@ -125,14 +126,16 @@ model SessionChangeRequest {
 }
 
 model ProgressEntry {
-  id         String   @id @default(cuid())
+  id         String           @id @default(cuid())
   studentId  String
-  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student    User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
   exerciseId String
-  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+  exercise   Exercise         @relation(fields: [exerciseId], references: [id])
+  sessionId  String? // тренировка, в рамках которой был выполнен подход (для привязки статуса выполнения к конкретной тренировке, а не к дате)
+  session    TrainingSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
   date       String // YYYY-MM-DD
   weight     Float
   reps       Int
-  sets       Int      @default(1)
-  createdAt  DateTime @default(now())
+  sets       Int              @default(1)
+  createdAt  DateTime         @default(now())
 }
