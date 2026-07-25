@@ -8,13 +8,14 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const body = await req.json();
-  const { date, startTime, endTime, title, programId, notes } = body as {
+  const { date, startTime, endTime, title, programId, notes, reminderMinutesBefore } = body as {
     date?: string;
     startTime?: string;
     endTime?: string;
     title?: string;
     programId?: string | null;
     notes?: string;
+    reminderMinutesBefore?: number | null;
   };
 
   const existing = await prisma.trainingSession.findUnique({ where: { id } });
@@ -42,6 +43,7 @@ export async function PATCH(
       ...(title !== undefined ? { title } : {}),
       ...(programId !== undefined ? { programId } : {}),
       ...(notes !== undefined ? { notes } : {}),
+      ...(reminderMinutesBefore !== undefined ? { reminderMinutesBefore } : {}),
     },
   });
   return NextResponse.json(session);

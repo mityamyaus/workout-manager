@@ -7,7 +7,7 @@ import type { TrainingSessionDTO } from "@/lib/types";
 
 const DEFAULT_REMIND_BEFORE_MIN = 15;
 const CHECK_INTERVAL_MS = 30_000;
-const NOTIFIED_KEY = "train-manager:notified-sessions";
+const NOTIFIED_KEY = "train-manager:notified-sessions-trainer";
 
 function loadNotified(): Set<string> {
   try {
@@ -22,10 +22,9 @@ function saveNotified(set: Set<string>) {
   localStorage.setItem(NOTIFIED_KEY, JSON.stringify([...set]));
 }
 
-// Напоминает о предстоящей тренировке за настроенное для неё время (по умолчанию
-// 15 минут, настраивается в форме тренировки), пока вкладка/приложение открыты.
-// Это не настоящий пуш в закрытое приложение - для него нужен отдельный push-сервер.
-export default function SessionReminder({ studentId }: { studentId: string }) {
+// Напоминает тренеру о предстоящей тренировке с учеником за настроенное для
+// неё время, пока вкладка/приложение открыты (аналог SessionReminder для ученика).
+export default function TrainerSessionReminder({ trainerId }: { trainerId: string }) {
   const notifiedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -34,7 +33,7 @@ export default function SessionReminder({ studentId }: { studentId: string }) {
     const check = async () => {
       if (notificationPermission() !== "granted") return;
 
-      const sessions = await fetchJson<TrainingSessionDTO[]>(`/api/sessions?studentId=${studentId}`);
+      const sessions = await fetchJson<TrainingSessionDTO[]>(`/api/sessions?trainerId=${trainerId}`);
       if (!sessions) return;
 
       const now = new Date();
@@ -50,8 +49,8 @@ export default function SessionReminder({ studentId }: { studentId: string }) {
 
         if (diffMin > 0 && diffMin <= leadMin) {
           notify("Скоро тренировка 🏋️", {
-            body: `${s.title || "Тренировка"} в ${s.startTime}`,
-            tag: `session-${s.id}`,
+            body: `${s.title || "Тренировка"} с ${s.student?.name ?? "учеником"} в ${s.startTime}`,
+            tag: `session-trainer-${s.id}`,
           });
           notifiedRef.current.add(s.id);
           saveNotified(notifiedRef.current);
@@ -62,7 +61,7 @@ export default function SessionReminder({ studentId }: { studentId: string }) {
     check();
     const interval = setInterval(check, CHECK_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [studentId]);
+  }, [trainerId]);
 
   return null;
 }

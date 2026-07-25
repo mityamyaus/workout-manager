@@ -18,6 +18,7 @@ import {
   Check,
   Dumbbell,
   LogOut,
+  CheckCircle2,
 } from "lucide-react";
 import HeroHeader from "@/components/HeroHeader";
 import BottomNav from "@/components/BottomNav";
@@ -110,6 +111,7 @@ export default function StudentHome() {
     title: string;
     programId: string | null;
     notes: string;
+    reminderMinutesBefore: number;
   }) => {
     if (editingSession && editingSession !== "new") {
       await fetch(`/api/sessions/${editingSession.id}`, {
@@ -220,16 +222,22 @@ export default function StudentHome() {
                     <ChevronRight size={20} className="text-gray-300" />
                   </button>
                   {s.program && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setRunningProgram(s.program);
-                        setRunningSessionId(s.id);
-                      }}
-                      className="btn-primary w-full mt-4 text-sm"
-                    >
-                      <Play size={16} fill="currentColor" /> Начать тренировку
-                    </button>
+                    s.completed ? (
+                      <div className="flex items-center justify-center gap-1.5 rounded-2xl bg-emerald-50 text-emerald-600 text-sm font-medium py-3 mt-4">
+                        <CheckCircle2 size={16} /> Тренировка выполнена
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRunningProgram(s.program);
+                          setRunningSessionId(s.id);
+                        }}
+                        className="btn-primary w-full mt-4 text-sm"
+                      >
+                        <Play size={16} fill="currentColor" /> Начать тренировку
+                      </button>
+                    )
                   )}
                 </div>
               ))}
@@ -394,6 +402,7 @@ export default function StudentHome() {
           onClose={() => {
             setRunningProgram(null);
             setRunningSessionId(null);
+            loadSessions();
           }}
         />
       )}

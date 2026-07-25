@@ -4,6 +4,17 @@ import { useState } from "react";
 import { X, Trash2, Check } from "lucide-react";
 import type { ProgramDTO, TrainingSessionDTO } from "@/lib/types";
 
+const REMINDER_OPTIONS = [
+  { value: 0, label: "Без напоминания" },
+  { value: 5, label: "За 5 минут" },
+  { value: 10, label: "За 10 минут" },
+  { value: 15, label: "За 15 минут" },
+  { value: 30, label: "За 30 минут" },
+  { value: 60, label: "За 1 час" },
+  { value: 120, label: "За 2 часа" },
+  { value: 1440, label: "За 1 день" },
+];
+
 interface SessionFormProps {
   date: string;
   programs: ProgramDTO[];
@@ -16,6 +27,7 @@ interface SessionFormProps {
     title: string;
     programId: string | null;
     notes: string;
+    reminderMinutesBefore: number;
   }) => Promise<void>;
   onDelete?: () => Promise<void>;
 }
@@ -33,6 +45,9 @@ export default function SessionForm({
   const [title, setTitle] = useState(initial?.title ?? "");
   const [programId, setProgramId] = useState<string>(initial?.programId ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [reminderMinutesBefore, setReminderMinutesBefore] = useState(
+    initial?.reminderMinutesBefore ?? 15
+  );
   const [busy, setBusy] = useState(false);
 
   const handleSave = async () => {
@@ -44,6 +59,7 @@ export default function SessionForm({
       title,
       programId: programId || null,
       notes,
+      reminderMinutesBefore,
     });
     setBusy(false);
   };
@@ -102,6 +118,21 @@ export default function SessionForm({
             {programs.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name} {p.isIndividual ? "(индивид.)" : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block text-sm text-gray-500">
+          Напоминание
+          <select
+            value={reminderMinutesBefore}
+            onChange={(e) => setReminderMinutesBefore(Number(e.target.value))}
+            className="w-full mt-1 rounded-xl border border-gray-300 px-3 py-2"
+          >
+            {REMINDER_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
               </option>
             ))}
           </select>

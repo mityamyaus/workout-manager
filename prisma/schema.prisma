@@ -112,6 +112,7 @@ model TrainingSession {
   program    Program? @relation(fields: [programId], references: [id])
   notes      String?
   createdBy  String   @default("TRAINER") // "TRAINER" | "STUDENT" - кто создал эту запись
+  reminderMinutesBefore Int? // за сколько минут до начала напомнить; null = дефолт (15), 0 = без напоминания
   createdAt  DateTime @default(now())
 
   changeRequest   SessionChangeRequest?

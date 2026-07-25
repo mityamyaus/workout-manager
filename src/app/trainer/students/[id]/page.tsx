@@ -123,6 +123,7 @@ export default function StudentDetailPage({
     title: string;
     programId: string | null;
     notes: string;
+    reminderMinutesBefore: number;
   }) => {
     if (editingSession && editingSession !== "new") {
       await fetch(`/api/sessions/${editingSession.id}`, {

@@ -8,6 +8,7 @@ import HeroHeader from "@/components/HeroHeader";
 import StatCard from "@/components/StatCard";
 import PendingRequests from "@/components/PendingRequests";
 import TrainerRequestNotifier from "@/components/TrainerRequestNotifier";
+import TrainerSessionReminder from "@/components/TrainerSessionReminder";
 import NotificationPrompt from "@/components/NotificationPrompt";
 import InviteCodeBadge from "@/components/InviteCodeBadge";
 import { useTrainerGuard } from "@/lib/useTrainerGuard";
@@ -97,6 +98,7 @@ export default function TrainerHome() {
   return (
     <div className="space-y-5 pb-4">
       <TrainerRequestNotifier trainerId={trainerId} />
+      <TrainerSessionReminder trainerId={trainerId} />
       <HeroHeader title="Тренер" subtitle="Панель управления" icon={UserCog} badge={`${students.length} учеников`} />
 
       <div className="flex gap-1.5">

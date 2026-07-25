@@ -72,6 +72,8 @@ export interface TrainingSessionDTO {
   program: ProgramDTO | null;
   notes: string | null;
   createdBy: "TRAINER" | "STUDENT";
+  reminderMinutesBefore: number | null;
+  completed: boolean;
   changeRequest: SessionChangeRequestDTO | null;
 }
 
