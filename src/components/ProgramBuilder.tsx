@@ -11,6 +11,7 @@ import {
   ExerciseCategoryType,
 } from "@/lib/constants";
 import { getCategoryIcon } from "@/lib/category-icons";
+import DragHandle from "@/components/DragHandle";
 import { fetchJson } from "@/lib/fetchJson";
 import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 import type { ExerciseDTO, ProgramDTO } from "@/lib/types";
@@ -195,6 +196,7 @@ export default function ProgramBuilder({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-30">
       <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto overscroll-contain p-5 space-y-4">
+        <DragHandle onDismiss={onCancel} />
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">
             {isEditing ? "Редактировать программу" : "Новая программа"}

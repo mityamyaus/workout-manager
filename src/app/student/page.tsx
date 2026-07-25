@@ -36,9 +36,12 @@ import SessionReminder from "@/components/SessionReminder";
 import RequestStatusNotifier from "@/components/RequestStatusNotifier";
 import AssignedSessionNotifier from "@/components/AssignedSessionNotifier";
 import { fetchJson } from "@/lib/fetchJson";
+import { loadAdhocCompletedProgramIds } from "@/lib/adhocCompletion";
+import { useSwipeNavigation } from "@/lib/useSwipeNavigation";
 import type { ProgramDTO, TrainingSessionDTO, UserDTO } from "@/lib/types";
 
 type Tab = "calendar" | "programs" | "progress" | "profile";
+const TABS: readonly Tab[] = ["calendar", "programs", "progress", "profile"];
 
 export default function StudentHome() {
   const { role, studentId, trainerId, loading, reset } = useCurrentUser();
@@ -59,6 +62,17 @@ export default function StudentHome() {
   const [editingProgram, setEditingProgram] = useState<ProgramDTO | null>(null);
   const [viewingSession, setViewingSession] = useState<TrainingSessionDTO | null>(null);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [adhocCompletedToday, setAdhocCompletedToday] = useState<Set<string>>(new Set());
+
+  const refreshAdhocCompleted = () => {
+    if (!studentId) return;
+    setAdhocCompletedToday(loadAdhocCompletedProgramIds(studentId, format(new Date(), "yyyy-MM-dd")));
+  };
+
+  useEffect(() => {
+    refreshAdhocCompleted();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studentId]);
 
   useEffect(() => {
     if (!loading && (role !== "STUDENT" || !studentId)) router.replace("/");
@@ -96,6 +110,8 @@ export default function StudentHome() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentId]);
 
+  const swipeHandlers = useSwipeNavigation(TABS, tab, setTab);
+
   if (loading || role !== "STUDENT" || !student || !studentId || !trainerId) return null;
 
   const daySessions = sessions.filter((s) => s.date === selectedDate);
@@ -103,9 +119,10 @@ export default function StudentHome() {
   const nextSession = sessions
     .filter((s) => s.date >= today)
     .sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime))[0];
-  const completedProgramIdsToday = new Set(
-    sessions.filter((s) => s.date === today && s.completed && s.programId).map((s) => s.programId as string)
-  );
+  const completedProgramIdsToday = new Set([
+    ...sessions.filter((s) => s.date === today && s.completed && s.programId).map((s) => s.programId as string),
+    ...adhocCompletedToday,
+  ]);
 
   const handleSaveSession = async (data: {
     date: string;
@@ -186,6 +203,7 @@ export default function StudentHome() {
         <StatCard label="Активных программ" value={String(programs.length)} icon={LayoutGrid} color="#059669" />
       </div>
 
+      <div className="space-y-4" {...swipeHandlers}>
       {tab === "calendar" && <NotificationPrompt />}
 
       {tab === "calendar" && (
@@ -354,6 +372,7 @@ export default function StudentHome() {
           </button>
         </div>
       )}
+      </div>
 
       <BottomNav
         items={[
@@ -412,6 +431,7 @@ export default function StudentHome() {
             setRunningProgram(null);
             setRunningSessionId(null);
             loadSessions();
+            refreshAdhocCompleted();
           }}
         />
       )}

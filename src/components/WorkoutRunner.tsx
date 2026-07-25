@@ -6,6 +6,7 @@ import { X, Check, PartyPopper, Minus, Plus } from "lucide-react";
 import { getCategoryIcon } from "@/lib/category-icons";
 import { notify, vibrate } from "@/lib/notifications";
 import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
+import { markAdhocCompleted } from "@/lib/adhocCompletion";
 import type { ProgramDTO } from "@/lib/types";
 
 interface WorkoutRunnerProps {
@@ -61,6 +62,14 @@ export default function WorkoutRunner({ program, studentId, sessionId, onClose, 
   const set = flatSets[current];
 
   useLockBodyScroll();
+
+  useEffect(() => {
+    if (phase !== "done" || sessionId) return;
+    // ad-hoc запуск (не из календаря) - нет TrainingSession, чтобы посчитать
+    // завершённость на сервере, поэтому отмечаем локально для этого дня
+    markAdhocCompleted(studentId, program.id, format(new Date(), "yyyy-MM-dd"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== "rest") return;

@@ -13,6 +13,7 @@ import NotificationPrompt from "@/components/NotificationPrompt";
 import InviteCodeBadge from "@/components/InviteCodeBadge";
 import { useTrainerGuard } from "@/lib/useTrainerGuard";
 import { fetchJson } from "@/lib/fetchJson";
+import { useSwipeNavigation } from "@/lib/useSwipeNavigation";
 import type { SessionChangeRequestDTO, UserDTO } from "@/lib/types";
 
 type PendingRequestWithSession = SessionChangeRequestDTO & {
@@ -20,6 +21,7 @@ type PendingRequestWithSession = SessionChangeRequestDTO & {
 };
 
 type Tab = "students" | "profile";
+const TABS: readonly Tab[] = ["students", "profile"];
 
 export default function TrainerHome() {
   const { role, trainerId, loading, reset } = useCurrentUser();
@@ -88,6 +90,8 @@ export default function TrainerHome() {
     loadStudents();
   };
 
+  const swipeHandlers = useSwipeNavigation(TABS, tab, setTab);
+
   if (loading || role !== "TRAINER" || !trainerId) return null;
 
   const withWeight = students.filter((s) => s.weight);
@@ -120,6 +124,7 @@ export default function TrainerHome() {
         </button>
       </div>
 
+      <div className="space-y-5" {...swipeHandlers}>
       {tab === "students" && (
         <>
           <div className="grid grid-cols-2 gap-3">
@@ -215,6 +220,7 @@ export default function TrainerHome() {
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 }

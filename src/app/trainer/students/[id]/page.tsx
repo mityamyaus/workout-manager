@@ -31,6 +31,7 @@ import QuickAddSheet from "@/components/QuickAddSheet";
 import CopyDayModal from "@/components/CopyDayModal";
 import { useTrainerGuard } from "@/lib/useTrainerGuard";
 import { fetchJson } from "@/lib/fetchJson";
+import { useSwipeNavigation } from "@/lib/useSwipeNavigation";
 import type { ProgramDTO, SessionChangeRequestDTO, TrainingSessionDTO, UserDTO } from "@/lib/types";
 
 type PendingRequestWithSession = SessionChangeRequestDTO & {
@@ -38,6 +39,7 @@ type PendingRequestWithSession = SessionChangeRequestDTO & {
 };
 
 type Tab = "calendar" | "programs" | "progress" | "profile";
+const TABS: readonly Tab[] = ["calendar", "programs", "progress", "profile"];
 
 export default function StudentDetailPage({
   params,
@@ -111,6 +113,8 @@ export default function StudentDetailPage({
     loadRequests();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentId]);
+
+  const swipeHandlers = useSwipeNavigation(TABS, tab, setTab);
 
   if (loading || role !== "TRAINER" || !student || !trainerId) return null;
 
@@ -208,6 +212,7 @@ export default function StudentDetailPage({
         }}
       />
 
+      <div className="space-y-4" {...swipeHandlers}>
       {tab !== "profile" && (
         <div className="flex items-center justify-between px-1">
           <span className="text-xs text-gray-400">Код ученика</span>
@@ -340,6 +345,7 @@ export default function StudentDetailPage({
           </button>
         </div>
       )}
+      </div>
 
       <BottomNav
         items={[
