@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { X, Check, Play, Pencil, Trash2, CheckCircle2 } from "lucide-react";
 import { getCategoryIcon } from "@/lib/category-icons";
 import { fetchJson } from "@/lib/fetchJson";
+import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 import type { ProgressEntryDTO, TrainingSessionDTO } from "@/lib/types";
 
 interface SessionDetailCardProps {
@@ -27,6 +28,8 @@ export default function SessionDetailCard({
 }: SessionDetailCardProps) {
   const [doneCounts, setDoneCounts] = useState<Record<string, number>>({});
 
+  useLockBodyScroll();
+
   useEffect(() => {
     fetchJson<ProgressEntryDTO[]>(`/api/progress?studentId=${studentId}&sessionId=${session.id}`).then(
       (entries) => {
@@ -49,7 +52,7 @@ export default function SessionDetailCard({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-30 p-0 sm:p-4">
-      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[90vh] overflow-y-auto overscroll-contain">
         <div className="px-6 pt-6 pb-4 border-b border-gray-50">
           <div className="flex items-start justify-between">
             <div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, Trash2, Check } from "lucide-react";
+import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 import type { ProgramDTO, TrainingSessionDTO } from "@/lib/types";
 
 const REMINDER_OPTIONS = [
@@ -50,6 +51,8 @@ export default function SessionForm({
   );
   const [busy, setBusy] = useState(false);
 
+  useLockBodyScroll();
+
   const handleSave = async () => {
     setBusy(true);
     await onSave({
@@ -66,7 +69,7 @@ export default function SessionForm({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-30 p-0 sm:p-4">
-      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto overscroll-contain">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">
             {initial ? "Тренировка" : "Новая тренировка"} · {date}
@@ -76,7 +79,7 @@ export default function SessionForm({
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="min-w-0 text-sm text-gray-500">
             Начало
             <input

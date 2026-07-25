@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, Copy } from "lucide-react";
+import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 
 interface CopyDayModalProps {
   sourceDate: string;
@@ -13,6 +14,8 @@ export default function CopyDayModal({ sourceDate, onCancel, onCopy }: CopyDayMo
   const [targetDate, setTargetDate] = useState(sourceDate);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useLockBodyScroll();
 
   const handleCopy = async () => {
     if (!targetDate) return;

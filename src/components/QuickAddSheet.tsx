@@ -1,6 +1,7 @@
 "use client";
 
 import { Dumbbell, ClipboardList } from "lucide-react";
+import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 
 interface QuickAddSheetProps {
   onAddSession: () => void;
@@ -9,6 +10,8 @@ interface QuickAddSheetProps {
 }
 
 export default function QuickAddSheet({ onAddSession, onAddProgram, onClose }: QuickAddSheetProps) {
+  useLockBodyScroll();
+
   return (
     <div className="fixed inset-0 z-30" onClick={onClose}>
       <div className="fixed inset-0 bg-black/30" />

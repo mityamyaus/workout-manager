@@ -103,6 +103,9 @@ export default function StudentHome() {
   const nextSession = sessions
     .filter((s) => s.date >= today)
     .sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime))[0];
+  const completedProgramIdsToday = new Set(
+    sessions.filter((s) => s.date === today && s.completed && s.programId).map((s) => s.programId as string)
+  );
 
   const handleSaveSession = async (data: {
     date: string;
@@ -268,15 +271,21 @@ export default function StudentHome() {
                     : undefined
                 }
               />
-              <button
-                onClick={() => {
-                  setRunningProgram(p);
-                  setRunningSessionId(null);
-                }}
-                className="btn-primary w-full text-sm"
-              >
-                <Play size={16} fill="currentColor" /> Начать тренировку
-              </button>
+              {completedProgramIdsToday.has(p.id) ? (
+                <div className="flex items-center justify-center gap-1.5 rounded-2xl bg-emerald-50 text-emerald-600 text-sm font-medium py-3">
+                  <CheckCircle2 size={16} /> Сегодня уже пройдено
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setRunningProgram(p);
+                    setRunningSessionId(null);
+                  }}
+                  className="btn-primary w-full text-sm"
+                >
+                  <Play size={16} fill="currentColor" /> Начать тренировку
+                </button>
+              )}
             </div>
           ))}
           {programs.length === 0 && (

@@ -12,6 +12,7 @@ import {
 } from "@/lib/constants";
 import { getCategoryIcon } from "@/lib/category-icons";
 import { fetchJson } from "@/lib/fetchJson";
+import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 import type { ExerciseDTO, ProgramDTO } from "@/lib/types";
 
 interface DraftSet {
@@ -63,6 +64,8 @@ export default function ProgramBuilder({
   const [programName, setProgramName] = useState(existingProgram?.name ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useLockBodyScroll();
 
   useEffect(() => {
     fetchJson<ExerciseDTO[]>("/api/exercises").then((list) => {
@@ -191,7 +194,7 @@ export default function ProgramBuilder({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-30">
-      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto p-5 space-y-4">
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto overscroll-contain p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">
             {isEditing ? "Редактировать программу" : "Новая программа"}
@@ -330,7 +333,7 @@ export default function ProgramBuilder({
             className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
           />
 
-          <div className="max-h-56 overflow-y-auto space-y-1 pt-1">
+          <div className="max-h-56 overflow-y-auto overscroll-contain space-y-1 pt-1">
             {filtered.map((ex) => {
               const added = draft.some((d) => d.exerciseId === ex.id);
               const Icon = getCategoryIcon(ex.category);
