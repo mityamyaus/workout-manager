@@ -37,11 +37,9 @@ import RequestStatusNotifier from "@/components/RequestStatusNotifier";
 import AssignedSessionNotifier from "@/components/AssignedSessionNotifier";
 import { fetchJson } from "@/lib/fetchJson";
 import { loadAdhocCompletedProgramIds } from "@/lib/adhocCompletion";
-import { useSwipeNavigation } from "@/lib/useSwipeNavigation";
 import type { ProgramDTO, TrainingSessionDTO, UserDTO } from "@/lib/types";
 
 type Tab = "calendar" | "programs" | "progress" | "profile";
-const TABS: readonly Tab[] = ["calendar", "programs", "progress", "profile"];
 
 export default function StudentHome() {
   const { role, studentId, trainerId, loading, reset } = useCurrentUser();
@@ -109,8 +107,6 @@ export default function StudentHome() {
     loadPrograms();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentId]);
-
-  const swipeHandlers = useSwipeNavigation(TABS, tab, setTab);
 
   if (loading || role !== "STUDENT" || !student || !studentId || !trainerId) return null;
 
@@ -203,7 +199,6 @@ export default function StudentHome() {
         <StatCard label="Активных программ" value={String(programs.length)} icon={LayoutGrid} color="#059669" />
       </div>
 
-      <div className="space-y-4" {...swipeHandlers}>
       {tab === "calendar" && <NotificationPrompt />}
 
       {tab === "calendar" && (
@@ -372,7 +367,6 @@ export default function StudentHome() {
           </button>
         </div>
       )}
-      </div>
 
       <BottomNav
         items={[

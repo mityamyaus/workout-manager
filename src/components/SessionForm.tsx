@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { X, Trash2, Check } from "lucide-react";
-import DragHandle from "@/components/DragHandle";
 import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 import type { ProgramDTO, TrainingSessionDTO } from "@/lib/types";
 
@@ -71,7 +70,6 @@ export default function SessionForm({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-30 p-0 sm:p-4">
       <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto overscroll-contain">
-        <DragHandle onDismiss={onCancel} />
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">
             {initial ? "Тренировка" : "Новая тренировка"} · {date}
