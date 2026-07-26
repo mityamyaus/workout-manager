@@ -361,6 +361,7 @@ export default function StudentDetailPage({
           onCancel={() => setEditingSession(null)}
           onSave={handleSaveSession}
           onDelete={editingSession !== "new" ? handleDeleteSession : undefined}
+          onEditProgram={(p) => setEditingProgram(p)}
         />
       )}
 

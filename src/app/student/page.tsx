@@ -373,6 +373,8 @@ export default function StudentHome() {
           onCancel={() => setEditingSession(null)}
           onSave={handleSaveSession}
           onDelete={editingSession !== "new" ? handleDeleteSession : undefined}
+          onEditProgram={(p) => setEditingProgram(p)}
+          canEditProgram={(p) => p.isIndividual}
         />
       )}
 

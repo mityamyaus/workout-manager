@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Trash2, Check } from "lucide-react";
+import { X, Trash2, Check, Dumbbell } from "lucide-react";
 import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 import type { ProgramDTO, TrainingSessionDTO } from "@/lib/types";
 
@@ -31,6 +31,8 @@ interface SessionFormProps {
     reminderMinutesBefore: number;
   }) => Promise<void>;
   onDelete?: () => Promise<void>;
+  onEditProgram?: (program: ProgramDTO) => void;
+  canEditProgram?: (program: ProgramDTO) => boolean;
 }
 
 export default function SessionForm({
@@ -40,6 +42,8 @@ export default function SessionForm({
   onCancel,
   onSave,
   onDelete,
+  onEditProgram,
+  canEditProgram,
 }: SessionFormProps) {
   const [startTime, setStartTime] = useState(initial?.startTime ?? "18:00");
   const [endTime, setEndTime] = useState(initial?.endTime ?? "19:00");
@@ -125,6 +129,21 @@ export default function SessionForm({
             ))}
           </select>
         </label>
+
+        {programId && onEditProgram && (() => {
+          const program = programs.find((p) => p.id === programId);
+          if (!program) return null;
+          if (canEditProgram && !canEditProgram(program)) return null;
+          return (
+            <button
+              type="button"
+              onClick={() => onEditProgram(program)}
+              className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-300 py-2 text-sm text-gray-500 font-medium hover:bg-gray-50 hover:border-gray-400 transition-colors"
+            >
+              <Dumbbell size={14} /> Настроить веса программы
+            </button>
+          );
+        })()}
 
         <label className="block text-sm text-gray-500">
           Напоминание
