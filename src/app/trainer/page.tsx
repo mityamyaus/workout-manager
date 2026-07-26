@@ -96,7 +96,7 @@ export default function TrainerHome() {
     : 0;
 
   return (
-    <div className="space-y-5 pb-4">
+    <div className="space-y-3 pb-4">
       <TrainerRequestNotifier trainerId={trainerId} />
       <TrainerSessionReminder trainerId={trainerId} />
       <HeroHeader title="Тренер" subtitle="Панель управления" icon={UserCog} badge={`${students.length} учеников`} />

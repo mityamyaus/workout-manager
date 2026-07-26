@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { X, Plus, Check, Copy, Trash2 } from "lucide-react";
+import { X, Plus, Check, Copy, Trash2, TrendingUp } from "lucide-react";
 import {
   CATEGORY_LABELS,
   EQUIPMENT_LABELS,
@@ -13,7 +13,14 @@ import {
 import { getCategoryIcon } from "@/lib/category-icons";
 import { fetchJson } from "@/lib/fetchJson";
 import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
-import type { ExerciseDTO, ProgramDTO } from "@/lib/types";
+import type { ExerciseDTO, ProgramDTO, ProgressEntryDTO } from "@/lib/types";
+
+// Простая линейная прогрессия: следующий раз предлагаем на 2.5 кг больше
+// последнего рабочего веса по этому упражнению (0/б.в. упражнения не трогаем).
+function suggestNextWeight(lastWeight: number): number {
+  if (!lastWeight) return 0;
+  return Math.round((lastWeight + 2.5) * 2) / 2;
+}
 
 interface DraftSet {
   weight: number;
@@ -64,6 +71,7 @@ export default function ProgramBuilder({
   const [programName, setProgramName] = useState(existingProgram?.name ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastPerformance, setLastPerformance] = useState<Record<string, { weight: number; reps: number }>>({});
 
   useLockBodyScroll();
 
@@ -72,6 +80,19 @@ export default function ProgramBuilder({
       if (list) setExercises(list);
     });
   }, []);
+
+  useEffect(() => {
+    fetchJson<ProgressEntryDTO[]>(`/api/progress?studentId=${studentId}`).then((entries) => {
+      if (!entries) return;
+      // entries отсортированы по дате по возрастанию - последнее вхождение на упражнение
+      // и есть самый свежий результат
+      const last: Record<string, { weight: number; reps: number }> = {};
+      for (const e of entries) {
+        last[e.exerciseId] = { weight: e.weight, reps: e.reps };
+      }
+      setLastPerformance(last);
+    });
+  }, [studentId]);
 
   const filtered = useMemo(() => {
     return exercises.filter((ex) => {
@@ -84,6 +105,7 @@ export default function ProgramBuilder({
 
   const addExercise = (ex: ExerciseDTO) => {
     if (draft.some((d) => d.exerciseId === ex.id)) return;
+    const last = lastPerformance[ex.id];
     setDraft((prev) => [
       ...prev,
       {
@@ -91,9 +113,20 @@ export default function ProgramBuilder({
         name: ex.name,
         category: ex.category,
         restSeconds: 90,
-        sets: [{ weight: 0, reps: 10 }],
+        sets: [last ? { weight: suggestNextWeight(last.weight), reps: last.reps } : { weight: 0, reps: 10 }],
       },
     ]);
+  };
+
+  const applySuggested = (exerciseId: string) => {
+    const last = lastPerformance[exerciseId];
+    if (!last) return;
+    const weight = suggestNextWeight(last.weight);
+    setDraft((prev) =>
+      prev.map((d) =>
+        d.exerciseId !== exerciseId ? d : { ...d, sets: d.sets.map((s) => ({ ...s, weight, reps: last.reps })) }
+      )
+    );
   };
 
   const removeExercise = (exerciseId: string) => {
@@ -216,6 +249,7 @@ export default function ProgramBuilder({
             <p className="text-sm font-medium text-gray-500">Выбранные упражнения</p>
             {draft.map((d) => {
               const Icon = getCategoryIcon(d.category);
+              const last = lastPerformance[d.exerciseId];
               return (
               <div key={d.exerciseId} className="bg-gray-50 rounded-2xl p-3 space-y-2">
                 <div className="flex items-center gap-2">
@@ -225,6 +259,22 @@ export default function ProgramBuilder({
                     <X size={16} />
                   </button>
                 </div>
+
+                {last && (
+                  <button
+                    onClick={() => applySuggested(d.exerciseId)}
+                    className="w-full flex items-center gap-1.5 text-xs text-left bg-white rounded-xl px-2.5 py-1.5 border border-gray-200 hover:border-[var(--accent)] transition-colors"
+                  >
+                    <TrendingUp size={13} className="text-[var(--accent)] shrink-0" />
+                    <span className="flex-1 text-gray-500">
+                      Прошлый раз: {last.weight ? `${last.weight} кг` : "б/в"} × {last.reps}. Рекомендуем{" "}
+                      <span className="font-medium text-gray-700">
+                        {suggestNextWeight(last.weight) ? `${suggestNextWeight(last.weight)} кг` : "б/в"} × {last.reps}
+                      </span>
+                    </span>
+                    <span className="text-[var(--accent)] font-medium shrink-0">Применить</span>
+                  </button>
+                )}
 
                 <div className="space-y-2">
                   {d.sets.map((s, i) => (

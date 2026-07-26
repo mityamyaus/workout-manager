@@ -24,22 +24,22 @@ export default function HeroHeader({
   const days = [-3, -2, -1, 0, 1, 2, 3].map((offset) => addDays(selectedDate, offset));
 
   return (
-    <div className="card px-5 pt-5 pb-4">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
+    <div className="card px-4 pt-4 pb-3">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2.5">
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center"
+            className="w-10 h-10 rounded-full flex items-center justify-center"
             style={{ backgroundColor: "#16a34a1f", color: "#16a34a" }}
           >
-            <Icon size={22} strokeWidth={1.75} />
+            <Icon size={19} strokeWidth={1.75} />
           </div>
           <div>
-            <p className="font-bold text-lg leading-tight">{title}</p>
-            {subtitle && <p className="text-sm text-gray-400 leading-tight">{subtitle}</p>}
+            <p className="font-bold text-base leading-tight">{title}</p>
+            {subtitle && <p className="text-xs text-gray-400 leading-tight">{subtitle}</p>}
           </div>
         </div>
         {badge && (
-          <span className="bg-gray-100 text-xs font-medium px-3 py-1.5 rounded-full whitespace-nowrap text-gray-600">
+          <span className="bg-gray-100 text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap text-gray-600">
             {badge}
           </span>
         )}
@@ -52,7 +52,7 @@ export default function HeroHeader({
             <button
               key={d.toISOString()}
               onClick={() => onSelectDate?.(d)}
-              className={`flex flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 transition-colors ${
+              className={`flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 transition-colors ${
                 active ? "hero-gradient" : "hover:bg-gray-50"
               }`}
             >

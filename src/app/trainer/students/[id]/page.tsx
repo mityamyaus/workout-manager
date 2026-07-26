@@ -190,7 +190,7 @@ export default function StudentDetailPage({
   };
 
   return (
-    <div className="space-y-4 pb-4">
+    <div className="space-y-3 pb-4">
       <button onClick={() => router.push("/trainer")} className="flex items-center gap-1 text-sm text-gray-500">
         <ArrowLeft size={15} /> Все ученики
       </button>

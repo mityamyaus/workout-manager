@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import HeroHeader from "@/components/HeroHeader";
 import BottomNav from "@/components/BottomNav";
-import StatCard from "@/components/StatCard";
 import Calendar from "@/components/Calendar";
 import SessionForm from "@/components/SessionForm";
 import ProgramBuilder from "@/components/ProgramBuilder";
@@ -112,9 +111,6 @@ export default function StudentHome() {
 
   const daySessions = sessions.filter((s) => s.date === selectedDate);
   const today = format(new Date(), "yyyy-MM-dd");
-  const nextSession = sessions
-    .filter((s) => s.date >= today)
-    .sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime))[0];
   const completedProgramIdsToday = new Set([
     ...sessions.filter((s) => s.date === today && s.completed && s.programId).map((s) => s.programId as string),
     ...adhocCompletedToday,
@@ -171,7 +167,7 @@ export default function StudentHome() {
   };
 
   return (
-    <div className="space-y-4 pb-4">
+    <div className="space-y-3 pb-4">
       <SessionReminder studentId={studentId} />
       <RequestStatusNotifier studentId={studentId} />
       <AssignedSessionNotifier studentId={studentId} />
@@ -187,17 +183,6 @@ export default function StudentHome() {
           setTab("calendar");
         }}
       />
-
-      <div className="grid grid-cols-2 gap-3">
-        <StatCard
-          label="Следующая тренировка"
-          value={nextSession ? nextSession.date.slice(5) : "Нет"}
-          unit={nextSession ? nextSession.startTime : "тренировок"}
-          icon={Clock3}
-          color="#16a34a"
-        />
-        <StatCard label="Активных программ" value={String(programs.length)} icon={LayoutGrid} color="#059669" />
-      </div>
 
       {tab === "calendar" && <NotificationPrompt />}
 
