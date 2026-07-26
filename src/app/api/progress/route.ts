@@ -25,10 +25,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { studentId, exerciseId, sessionId, date, weight, reps, sets } = body as {
+  const { studentId, exerciseId, sessionId, setIndex, date, weight, reps, sets } = body as {
     studentId?: string;
     exerciseId?: string;
     sessionId?: string | null;
+    setIndex?: number | null;
     date?: string;
     weight?: number;
     reps?: number;
@@ -47,6 +48,7 @@ export async function POST(req: Request) {
       studentId,
       exerciseId,
       sessionId: sessionId || null,
+      setIndex: setIndex ?? null,
       date,
       weight,
       reps,

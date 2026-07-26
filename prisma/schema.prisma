@@ -139,6 +139,7 @@ model ProgressEntry {
   exercise   Exercise         @relation(fields: [exerciseId], references: [id])
   sessionId  String? // тренировка, в рамках которой был выполнен подход (для привязки статуса выполнения к конкретной тренировке, а не к дате)
   session    TrainingSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  setIndex   Int? // позиция конкретного сета в программе упражнения (для точечной отметки/снятия отметки в карточке тренировки)
   date       String // YYYY-MM-DD
   weight     Float
   reps       Int

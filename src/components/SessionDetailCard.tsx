@@ -5,7 +5,7 @@ import { X, Check, Play, Pencil, Trash2, CheckCircle2 } from "lucide-react";
 import { getCategoryIcon } from "@/lib/category-icons";
 import { fetchJson } from "@/lib/fetchJson";
 import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
-import type { ProgressEntryDTO, TrainingSessionDTO } from "@/lib/types";
+import type { ProgramExerciseDTO, ProgressEntryDTO, TrainingSessionDTO } from "@/lib/types";
 
 interface SessionDetailCardProps {
   session: TrainingSessionDTO;
@@ -26,22 +26,30 @@ export default function SessionDetailCard({
   onDelete,
   onClose,
 }: SessionDetailCardProps) {
-  const [doneCounts, setDoneCounts] = useState<Record<string, number>>({});
+  const [entries, setEntries] = useState<ProgressEntryDTO[]>([]);
+  const [busySet, setBusySet] = useState<string | null>(null);
 
   useLockBodyScroll();
 
-  useEffect(() => {
-    fetchJson<ProgressEntryDTO[]>(`/api/progress?studentId=${studentId}&sessionId=${session.id}`).then(
-      (entries) => {
-        if (!entries) return;
-        const counts: Record<string, number> = {};
-        for (const e of entries) {
-          counts[e.exerciseId] = (counts[e.exerciseId] ?? 0) + 1;
-        }
-        setDoneCounts(counts);
-      }
+  const loadEntries = async () => {
+    const data = await fetchJson<ProgressEntryDTO[]>(
+      `/api/progress?studentId=${studentId}&sessionId=${session.id}`
     );
+    if (data) setEntries(data);
+  };
+
+  useEffect(() => {
+    loadEntries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentId, session.id]);
+
+  const entriesForExercise = (exerciseId: string) =>
+    entries
+      .filter((e) => e.exerciseId === exerciseId)
+      .sort((a, b) => (a.setIndex ?? 999) - (b.setIndex ?? 999) || a.id.localeCompare(b.id));
+
+  const doneCounts: Record<string, number> = {};
+  for (const e of entries) doneCounts[e.exerciseId] = (doneCounts[e.exerciseId] ?? 0) + 1;
 
   const program = session.program;
   const totalSets = program ? program.exercises.reduce((sum, pe) => sum + pe.sets.length, 0) : 0;
@@ -49,6 +57,37 @@ export default function SessionDetailCard({
     ? program.exercises.reduce((sum, pe) => sum + Math.min(doneCounts[pe.exerciseId] ?? 0, pe.sets.length), 0)
     : 0;
   const completed = totalSets > 0 && doneSets >= totalSets;
+
+  const toggleSet = async (pe: ProgramExerciseDTO, setIndex: number) => {
+    const key = `${pe.exerciseId}:${setIndex}`;
+    if (busySet) return;
+    setBusySet(key);
+    try {
+      const forExercise = entriesForExercise(pe.exerciseId);
+      if (setIndex < forExercise.length) {
+        await fetch(`/api/progress/${forExercise[setIndex].id}`, { method: "DELETE" });
+      } else {
+        const target = pe.sets[setIndex];
+        await fetch("/api/progress", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            studentId,
+            exerciseId: pe.exerciseId,
+            sessionId: session.id,
+            setIndex,
+            date: session.date,
+            weight: target.weight,
+            reps: target.reps,
+            sets: 1,
+          }),
+        });
+      }
+      await loadEntries();
+    } finally {
+      setBusySet(null);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-30 p-0 sm:p-4">
@@ -87,6 +126,7 @@ export default function SessionDetailCard({
           {program ? (
             <div>
               <p className="font-semibold mb-2">{program.name}</p>
+              <p className="text-xs text-gray-400 mb-2">Нажмите на кружок, чтобы отметить или снять отметку о выполнении сета</p>
               <div className="space-y-3">
                 {program.exercises.map((pe) => {
                   const done = doneCounts[pe.exerciseId] ?? 0;
@@ -99,17 +139,25 @@ export default function SessionDetailCard({
                       <div className="flex-1">
                         <p className="text-sm font-medium">{pe.exercise.name}</p>
                         <div className="flex flex-wrap gap-2 mt-1.5">
-                          {pe.sets.map((s, i) => (
-                            <span
-                              key={s.id}
-                              className="flex items-center gap-1.5 text-xs bg-gray-50 rounded-full pl-1 pr-2.5 py-1"
-                            >
-                              <span className={`check-dot ${i < done ? "done" : ""}`}>
-                                <Check size={11} strokeWidth={3} />
+                          {pe.sets.map((s, i) => {
+                            const key = `${pe.exerciseId}:${i}`;
+                            return (
+                              <span
+                                key={s.id}
+                                className="flex items-center gap-1.5 text-xs bg-gray-50 rounded-full pl-1 pr-2.5 py-1"
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => toggleSet(pe, i)}
+                                  disabled={busySet === key}
+                                  className={`check-dot ${i < done ? "done" : ""} p-0 leading-none cursor-pointer disabled:opacity-50 disabled:cursor-default`}
+                                >
+                                  <Check size={11} strokeWidth={3} />
+                                </button>
+                                {s.weight ? `${s.weight}кг` : "б/в"}×{s.reps}
                               </span>
-                              {s.weight ? `${s.weight}кг` : "б/в"}×{s.reps}
-                            </span>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
