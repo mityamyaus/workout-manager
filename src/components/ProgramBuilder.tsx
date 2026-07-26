@@ -22,6 +22,14 @@ function suggestNextWeight(lastWeight: number): number {
   return Math.round((lastWeight + 2.5) * 2) / 2;
 }
 
+const WEIGHT_LIST_ID = "program-builder-weight-options";
+
+// Список для подсказки веса в <datalist> - можно выбрать из него или ввести
+// произвольное (в т.ч. дробное) значение вручную.
+const WEIGHT_OPTIONS: number[] = [];
+for (let w = 0; w <= 100; w += 0.5) WEIGHT_OPTIONS.push(w);
+for (let w = 102.5; w <= 200; w += 2.5) WEIGHT_OPTIONS.push(w);
+
 interface DraftSet {
   weight: number;
   reps: number;
@@ -237,6 +245,12 @@ export default function ProgramBuilder({
           </button>
         </div>
 
+        <datalist id={WEIGHT_LIST_ID}>
+          {WEIGHT_OPTIONS.map((w) => (
+            <option key={w} value={w} />
+          ))}
+        </datalist>
+
         <input
           value={programName}
           onChange={(e) => setProgramName(e.target.value)}
@@ -282,6 +296,8 @@ export default function ProgramBuilder({
                       <span className="text-xs text-gray-400 w-9 shrink-0">Сет {i + 1}</span>
                       <input
                         type="number"
+                        step="0.5"
+                        list={WEIGHT_LIST_ID}
                         value={s.weight}
                         onChange={(e) => updateSet(d.exerciseId, i, "weight", Number(e.target.value))}
                         className="w-16 rounded-lg border border-gray-300 px-1 py-2 text-center text-sm"
