@@ -65,16 +65,16 @@ export async function POST(req: Request) {
     endTime?: string;
     title?: string;
     studentId?: string;
-    trainerId?: string;
+    trainerId?: string | null;
     programId?: string | null;
     notes?: string;
     createdBy?: "TRAINER" | "STUDENT";
     reminderMinutesBefore?: number | null;
   };
 
-  if (!date || !startTime || !endTime || !studentId || !trainerId) {
+  if (!date || !startTime || !endTime || !studentId) {
     return NextResponse.json(
-      { error: "Дата, время начала/конца, ученик и тренер обязательны" },
+      { error: "Дата, время начала/конца и ученик обязательны" },
       { status: 400 }
     );
   }
@@ -86,7 +86,7 @@ export async function POST(req: Request) {
       endTime,
       title: title?.trim() || null,
       studentId,
-      trainerId,
+      trainerId: trainerId || null,
       programId: programId || null,
       notes: notes?.trim() || null,
       createdBy: createdBy || "TRAINER",

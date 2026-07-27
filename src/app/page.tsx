@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Dumbbell, UserCog, User, ChevronRight, ArrowLeft } from "lucide-react";
+import { Dumbbell, UserCog, User, ChevronRight, ArrowLeft, UserPlus } from "lucide-react";
 import { useCurrentUser } from "@/context/current-user";
 import type { UserDTO } from "@/lib/types";
 
@@ -10,9 +10,11 @@ export default function Home() {
   const { role, loading, chooseStudent } = useCurrentUser();
   const router = useRouter();
 
-  const [mode, setMode] = useState<"choose" | "student-code">("choose");
+  const [mode, setMode] = useState<"choose" | "student-code" | "student-create">("choose");
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [createError, setCreateError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -33,8 +35,26 @@ export default function Home() {
       return;
     }
     const student: UserDTO = await res.json();
-    if (!student.trainerId) return;
     chooseStudent(student.id, student.trainerId);
+    router.push("/student");
+  };
+
+  const handleCreateSelf = async () => {
+    if (!name.trim()) return;
+    setBusy(true);
+    setCreateError(null);
+    const res = await fetch("/api/students/self", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: name.trim() }),
+    });
+    setBusy(false);
+    if (!res.ok) {
+      setCreateError("Не удалось создать аккаунт. Попробуйте ещё раз.");
+      return;
+    }
+    const student: UserDTO = await res.json();
+    chooseStudent(student.id, null);
     router.push("/student");
   };
 
@@ -79,6 +99,19 @@ export default function Home() {
             </span>
             <ChevronRight size={20} className="text-gray-300" />
           </button>
+          <button
+            onClick={() => setMode("student-create")}
+            className="card p-5 flex items-center gap-4 text-left"
+          >
+            <span className="icon-badge w-12 h-12" style={{ backgroundColor: "#eef4ee", color: "#14151a" }}>
+              <UserPlus size={22} strokeWidth={1.75} />
+            </span>
+            <span className="flex-1">
+              <span className="block font-semibold text-base">Занимаюсь самостоятельно</span>
+              <span className="block text-sm text-gray-400">Без тренера, свой аккаунт</span>
+            </span>
+            <ChevronRight size={20} className="text-gray-300" />
+          </button>
         </div>
       )}
 
@@ -111,6 +144,39 @@ export default function Home() {
             </button>
             <p className="text-xs text-gray-400 text-center">
               Кода нет? Попросите тренера добавить вас в приложении.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {mode === "student-create" && (
+        <div className="w-full max-w-sm space-y-3">
+          <button onClick={() => setMode("choose")} className="flex items-center gap-1 text-sm text-gray-400 font-medium">
+            <ArrowLeft size={15} /> назад
+          </button>
+          <div className="card p-5 space-y-3">
+            <p className="text-sm text-gray-500">
+              Создайте личный кабинет, чтобы вести тренировки и программы самостоятельно, без тренера.
+            </p>
+            <input
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                setCreateError(null);
+              }}
+              placeholder="Ваше имя"
+              className="w-full rounded-2xl border border-gray-200 px-4 py-3"
+            />
+            {createError && <p className="text-sm text-red-500">{createError}</p>}
+            <button
+              disabled={!name.trim() || busy}
+              onClick={handleCreateSelf}
+              className="btn-primary w-full"
+            >
+              Создать аккаунт
+            </button>
+            <p className="text-xs text-gray-400 text-center">
+              После создания в профиле появится личный код - сохраните его, чтобы войти снова с этого или другого устройства.
             </p>
           </div>
         </div>

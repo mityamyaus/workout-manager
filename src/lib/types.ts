@@ -67,7 +67,7 @@ export interface TrainingSessionDTO {
   title: string | null;
   studentId: string;
   student?: UserDTO;
-  trainerId: string;
+  trainerId: string | null;
   programId: string | null;
   program: ProgramDTO | null;
   notes: string | null;

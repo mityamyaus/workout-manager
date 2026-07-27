@@ -13,12 +13,10 @@ import {
   CalendarDays,
   Plus,
   ChevronRight,
-  Play,
   Pencil,
   Check,
   Dumbbell,
   LogOut,
-  CheckCircle2,
 } from "lucide-react";
 import HeroHeader from "@/components/HeroHeader";
 import BottomNav from "@/components/BottomNav";
@@ -27,15 +25,14 @@ import SessionForm from "@/components/SessionForm";
 import ProgramBuilder from "@/components/ProgramBuilder";
 import ProgramCard from "@/components/ProgramCard";
 import ProgressSection from "@/components/ProgressSection";
-import WorkoutRunner from "@/components/WorkoutRunner";
 import SessionDetailCard from "@/components/SessionDetailCard";
 import QuickAddSheet from "@/components/QuickAddSheet";
 import NotificationPrompt from "@/components/NotificationPrompt";
 import SessionReminder from "@/components/SessionReminder";
 import RequestStatusNotifier from "@/components/RequestStatusNotifier";
 import AssignedSessionNotifier from "@/components/AssignedSessionNotifier";
+import InviteCodeBadge from "@/components/InviteCodeBadge";
 import { fetchJson } from "@/lib/fetchJson";
-import { loadAdhocCompletedProgramIds } from "@/lib/adhocCompletion";
 import type { ProgramDTO, TrainingSessionDTO, UserDTO } from "@/lib/types";
 
 type Tab = "calendar" | "programs" | "progress" | "profile";
@@ -54,22 +51,9 @@ export default function StudentHome() {
   const [showProgramBuilder, setShowProgramBuilder] = useState(false);
   const [editingWeight, setEditingWeight] = useState(false);
   const [weightInput, setWeightInput] = useState("");
-  const [runningProgram, setRunningProgram] = useState<ProgramDTO | null>(null);
-  const [runningSessionId, setRunningSessionId] = useState<string | null>(null);
   const [editingProgram, setEditingProgram] = useState<ProgramDTO | null>(null);
   const [viewingSession, setViewingSession] = useState<TrainingSessionDTO | null>(null);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [adhocCompletedToday, setAdhocCompletedToday] = useState<Set<string>>(new Set());
-
-  const refreshAdhocCompleted = () => {
-    if (!studentId) return;
-    setAdhocCompletedToday(loadAdhocCompletedProgramIds(studentId, format(new Date(), "yyyy-MM-dd")));
-  };
-
-  useEffect(() => {
-    refreshAdhocCompleted();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [studentId]);
 
   useEffect(() => {
     if (!loading && (role !== "STUDENT" || !studentId)) router.replace("/");
@@ -107,14 +91,9 @@ export default function StudentHome() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentId]);
 
-  if (loading || role !== "STUDENT" || !student || !studentId || !trainerId) return null;
+  if (loading || role !== "STUDENT" || !student || !studentId) return null;
 
   const daySessions = sessions.filter((s) => s.date === selectedDate);
-  const today = format(new Date(), "yyyy-MM-dd");
-  const completedProgramIdsToday = new Set([
-    ...sessions.filter((s) => s.date === today && s.completed && s.programId).map((s) => s.programId as string),
-    ...adhocCompletedToday,
-  ]);
 
   const handleSaveSession = async (data: {
     date: string;
@@ -199,48 +178,29 @@ export default function StudentHome() {
           {selectedDate && (
             <div className="space-y-2.5">
               {daySessions.map((s) => (
-                <div key={s.id} className="card p-5">
-                  <button
-                    onClick={() => setViewingSession(s)}
-                    className="w-full flex items-center gap-4 text-left"
-                  >
-                    <span className="icon-badge w-14 h-14">
-                      {s.program ? <Dumbbell size={24} strokeWidth={1.75} /> : <CalendarIcon size={24} strokeWidth={1.75} />}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-lg font-bold">
-                        {s.startTime}–{s.endTime}
+                <button
+                  key={s.id}
+                  onClick={() => setViewingSession(s)}
+                  className="w-full flex items-center gap-4 card p-5 text-left"
+                >
+                  <span className="icon-badge w-14 h-14">
+                    {s.program ? <Dumbbell size={24} strokeWidth={1.75} /> : <CalendarIcon size={24} strokeWidth={1.75} />}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-lg font-bold">
+                      {s.startTime}–{s.endTime}
+                    </p>
+                    <p className="text-sm text-gray-400 truncate">
+                      {s.title || s.program?.name || "Тренировка"}
+                    </p>
+                    {s.changeRequest?.status === "PENDING" && (
+                      <p className="flex items-center gap-1 text-xs text-amber-600 mt-1">
+                        <Clock3 size={12} /> Заявка на перенос: {s.changeRequest.requestedDate} {s.changeRequest.requestedStartTime}
                       </p>
-                      <p className="text-sm text-gray-400 truncate">
-                        {s.title || s.program?.name || "Тренировка"}
-                      </p>
-                      {s.changeRequest?.status === "PENDING" && (
-                        <p className="flex items-center gap-1 text-xs text-amber-600 mt-1">
-                          <Clock3 size={12} /> Заявка на перенос: {s.changeRequest.requestedDate} {s.changeRequest.requestedStartTime}
-                        </p>
-                      )}
-                    </div>
-                    <ChevronRight size={20} className="text-gray-300" />
-                  </button>
-                  {s.program && (
-                    s.completed ? (
-                      <div className="flex items-center justify-center gap-1.5 rounded-2xl bg-emerald-50 text-emerald-600 text-sm font-medium py-3 mt-4">
-                        <CheckCircle2 size={16} /> Тренировка выполнена
-                      </div>
-                    ) : (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setRunningProgram(s.program);
-                          setRunningSessionId(s.id);
-                        }}
-                        className="btn-primary w-full mt-4 text-sm"
-                      >
-                        <Play size={16} fill="currentColor" /> Начать тренировку
-                      </button>
-                    )
-                  )}
-                </div>
+                    )}
+                  </div>
+                  <ChevronRight size={20} className="text-gray-300" />
+                </button>
               ))}
               <button
                 onClick={() => setEditingSession("new")}
@@ -256,35 +216,19 @@ export default function StudentHome() {
       {tab === "programs" && (
         <div className="space-y-3">
           {programs.map((p) => (
-            <div key={p.id} className="space-y-1.5">
-              <ProgramCard
-                program={p}
-                onEdit={p.isIndividual ? () => setEditingProgram(p) : undefined}
-                onDelete={
-                  p.isIndividual
-                    ? async () => {
-                        await fetch(`/api/programs/${p.id}`, { method: "DELETE" });
-                        loadPrograms();
-                      }
-                    : undefined
-                }
-              />
-              {completedProgramIdsToday.has(p.id) ? (
-                <div className="flex items-center justify-center gap-1.5 rounded-2xl bg-emerald-50 text-emerald-600 text-sm font-medium py-3">
-                  <CheckCircle2 size={16} /> Сегодня уже пройдено
-                </div>
-              ) : (
-                <button
-                  onClick={() => {
-                    setRunningProgram(p);
-                    setRunningSessionId(null);
-                  }}
-                  className="btn-primary w-full text-sm"
-                >
-                  <Play size={16} fill="currentColor" /> Начать тренировку
-                </button>
-              )}
-            </div>
+            <ProgramCard
+              key={p.id}
+              program={p}
+              onEdit={p.isIndividual ? () => setEditingProgram(p) : undefined}
+              onDelete={
+                p.isIndividual
+                  ? async () => {
+                      await fetch(`/api/programs/${p.id}`, { method: "DELETE" });
+                      loadPrograms();
+                    }
+                  : undefined
+              }
+            />
           ))}
           {programs.length === 0 && (
             <p className="text-sm text-gray-400">Программ пока нет.</p>
@@ -308,7 +252,7 @@ export default function StudentHome() {
             </span>
             <div>
               <p className="font-bold text-lg">{student.name}</p>
-              <p className="text-sm text-gray-400">Ученик</p>
+              <p className="text-sm text-gray-400">{trainerId ? "Ученик" : "Занимается самостоятельно"}</p>
             </div>
           </div>
           <div className="card p-5 space-y-3">
@@ -340,6 +284,13 @@ export default function StudentHome() {
                 </div>
               )}
             </label>
+          </div>
+          <div className="card p-5 space-y-2">
+            <p className="text-xs text-gray-500">Ваш личный код для входа</p>
+            <InviteCodeBadge code={student.inviteCode ?? ""} studentName={student.name} />
+            <p className="text-xs text-gray-400">
+              Сохраните его - он понадобится, чтобы зайти в аккаунт с другого устройства.
+            </p>
           </div>
           <button
             onClick={() => {
@@ -373,7 +324,6 @@ export default function StudentHome() {
           onCancel={() => setEditingSession(null)}
           onSave={handleSaveSession}
           onDelete={editingSession !== "new" ? handleDeleteSession : undefined}
-          onEditProgram={(p) => setEditingProgram(p)}
           canEditProgram={(p) => p.isIndividual}
         />
       )}
@@ -403,34 +353,10 @@ export default function StudentHome() {
         />
       )}
 
-      {runningProgram && (
-        <WorkoutRunner
-          program={runningProgram}
-          studentId={studentId}
-          sessionId={runningSessionId}
-          onClose={() => {
-            setRunningProgram(null);
-            setRunningSessionId(null);
-            loadSessions();
-            refreshAdhocCompleted();
-          }}
-        />
-      )}
-
       {viewingSession && (
         <SessionDetailCard
           session={viewingSession}
           studentId={studentId}
-          canStart
-          onStart={() => {
-            const program = viewingSession.program;
-            const sessionId = viewingSession.id;
-            setViewingSession(null);
-            if (program) {
-              setRunningProgram(program);
-              setRunningSessionId(sessionId);
-            }
-          }}
           onEdit={
             viewingSession.createdBy === "STUDENT"
               ? () => {

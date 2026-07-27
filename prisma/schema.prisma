@@ -106,8 +106,8 @@ model TrainingSession {
   title      String?
   studentId  String
   student    User     @relation("StudentSessions", fields: [studentId], references: [id], onDelete: Cascade)
-  trainerId  String
-  trainer    User     @relation("TrainerSessions", fields: [trainerId], references: [id], onDelete: Cascade)
+  trainerId  String? // null - ученик тренируется самостоятельно, без тренера
+  trainer    User?    @relation("TrainerSessions", fields: [trainerId], references: [id], onDelete: Cascade)
   programId  String?
   program    Program? @relation(fields: [programId], references: [id])
   notes      String?

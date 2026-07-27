@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { addDays, format, isSameDay } from "date-fns";
 import { ru } from "date-fns/locale";
-import type { LucideIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, type LucideIcon } from "lucide-react";
 
 interface HeroHeaderProps {
   title: string;
@@ -21,7 +22,15 @@ export default function HeroHeader({
   selectedDate = new Date(),
   onSelectDate,
 }: HeroHeaderProps) {
-  const days = [-3, -2, -1, 0, 1, 2, 3].map((offset) => addDays(selectedDate, offset));
+  // anchor - центр отображаемой недели; отдельно от selectedDate, чтобы можно
+  // было пролистать неделю вперёд/назад, не выбирая при этом день
+  const [anchor, setAnchor] = useState(selectedDate);
+
+  useEffect(() => {
+    setAnchor(selectedDate);
+  }, [selectedDate]);
+
+  const days = [-3, -2, -1, 0, 1, 2, 3].map((offset) => addDays(anchor, offset));
 
   return (
     <div className="card px-4 pt-4 pb-3">
@@ -45,26 +54,40 @@ export default function HeroHeader({
         )}
       </div>
 
-      <div className="flex justify-between px-1">
-        {days.map((d) => {
-          const active = isSameDay(d, selectedDate);
-          return (
-            <button
-              key={d.toISOString()}
-              onClick={() => onSelectDate?.(d)}
-              className={`flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 transition-colors ${
-                active ? "hero-gradient" : "hover:bg-gray-50"
-              }`}
-            >
-              <span className={`text-[10px] uppercase ${active ? "text-gray-800/70" : "text-gray-400"}`}>
-                {format(d, "EEEEEE", { locale: ru })}
-              </span>
-              <span className={`text-sm ${active ? "font-bold text-gray-900" : "font-medium text-gray-700"}`}>
-                {format(d, "d")}
-              </span>
-            </button>
-          );
-        })}
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => setAnchor((a) => addDays(a, -7))}
+          className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors"
+        >
+          <ChevronLeft size={16} />
+        </button>
+        <div className="flex-1 flex justify-between px-1">
+          {days.map((d) => {
+            const active = isSameDay(d, selectedDate);
+            return (
+              <button
+                key={d.toISOString()}
+                onClick={() => onSelectDate?.(d)}
+                className={`flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 transition-colors ${
+                  active ? "hero-gradient" : "hover:bg-gray-50"
+                }`}
+              >
+                <span className={`text-[10px] uppercase ${active ? "text-gray-800/70" : "text-gray-400"}`}>
+                  {format(d, "EEEEEE", { locale: ru })}
+                </span>
+                <span className={`text-sm ${active ? "font-bold text-gray-900" : "font-medium text-gray-700"}`}>
+                  {format(d, "d")}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <button
+          onClick={() => setAnchor((a) => addDays(a, 7))}
+          className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors"
+        >
+          <ChevronRight size={16} />
+        </button>
       </div>
     </div>
   );

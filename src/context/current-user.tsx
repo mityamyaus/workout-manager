@@ -16,7 +16,7 @@ interface CurrentUserState {
   trainerId: string | null;
   loading: boolean;
   chooseTrainer: (trainerId: string) => void;
-  chooseStudent: (studentId: string, trainerId: string) => void;
+  chooseStudent: (studentId: string, trainerId: string | null) => void;
   reset: () => void;
 }
 
@@ -56,7 +56,7 @@ export function CurrentUserProvider({ children }: { children: ReactNode }) {
     persist({ role: "TRAINER", studentId: null, trainerId: id });
   };
 
-  const chooseStudent = (sId: string, tId: string) => {
+  const chooseStudent = (sId: string, tId: string | null) => {
     setRole("STUDENT");
     setStudentId(sId);
     setTrainerId(tId);

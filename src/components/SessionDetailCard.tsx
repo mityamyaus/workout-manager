@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Check, Play, Pencil, Trash2, CheckCircle2 } from "lucide-react";
+import { X, Check, Pencil, Trash2 } from "lucide-react";
 import { getCategoryIcon } from "@/lib/category-icons";
 import { fetchJson } from "@/lib/fetchJson";
 import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
@@ -10,8 +10,6 @@ import type { ProgramExerciseDTO, ProgressEntryDTO, TrainingSessionDTO } from "@
 interface SessionDetailCardProps {
   session: TrainingSessionDTO;
   studentId: string;
-  canStart?: boolean;
-  onStart?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   onClose: () => void;
@@ -20,8 +18,6 @@ interface SessionDetailCardProps {
 export default function SessionDetailCard({
   session,
   studentId,
-  canStart,
-  onStart,
   onEdit,
   onDelete,
   onClose,
@@ -56,7 +52,6 @@ export default function SessionDetailCard({
   const doneSets = program
     ? program.exercises.reduce((sum, pe) => sum + Math.min(doneCounts[pe.exerciseId] ?? 0, pe.sets.length), 0)
     : 0;
-  const completed = totalSets > 0 && doneSets >= totalSets;
 
   const toggleSet = async (pe: ProgramExerciseDTO, setIndex: number) => {
     const key = `${pe.exerciseId}:${setIndex}`;
@@ -178,17 +173,6 @@ export default function SessionDetailCard({
         </div>
 
         <div className="px-6 pb-6 pt-2 space-y-2">
-          {canStart && program && (
-            completed ? (
-              <div className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-50 text-emerald-600 text-sm font-medium py-3">
-                <CheckCircle2 size={18} /> Тренировка выполнена
-              </div>
-            ) : (
-              <button onClick={onStart} className="btn-primary w-full text-base">
-                <Play size={18} fill="currentColor" /> Начать тренировку
-              </button>
-            )
-          )}
           <div className="flex gap-2">
             {onEdit && (
               <button onClick={onEdit} className="btn-secondary flex-1 text-sm py-2.5">
