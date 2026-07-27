@@ -6,8 +6,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Прямое (не через PgBouncer-пулер) подключение - используется только
+  // Prisma Migrate, которому нужен session-level advisory lock, а pooled-
+  // соединение Neon (хост с "-pooler") в transaction-режиме его не держит.
+  directUrl = env("DIRECT_URL")
 }
 
 // Role: "TRAINER" | "STUDENT"
